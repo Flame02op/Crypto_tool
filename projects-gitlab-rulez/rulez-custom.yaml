@@ -1,0 +1,91 @@
+rules:
+  - description: Set default settings
+    matches:
+      # example:
+      # - assuming you have following GitLab project space (project group): https://gitlab-apertispro.boschdevcloud.com/animals
+      # - assuming you have following GitLab projects within this space: https://gitlab-apertispro.boschdevcloud.com/animals/dogs
+      #   (short as animals/dogs) and https://gitlab-apertispro.boschdevcloud.com/animals/cats (short as animals/cats)
+      # - then you shall define the project match filter as animals/*
+      # - to apply the settings to all projects within the group you shall call the './gitlab-rulez' command with '--filter' argument animals/*
+      #   (BUT be aware that all projects within the group will be modified)
+      # - to apply the settings to a single project within the group you shall call the
+      #   './gitlab-rulez' command with '--filter' argument animals/dogs or animals/cats
+      - <Projectgroup>/*
+    settings:
+      # Merge method: Fast-forward merge
+      merge_method: ff
+      # Merge options
+      resolve_outdated_diff_discussions: false
+      printing_merge_request_link_enabled: true
+      remove_source_branch_after_merge: true
+      # Squash commits when merging: select one of the following values
+      # - Require: always
+      # - Encourage: default_on
+      # - Allow: default_off
+      # - Do not allow: never
+      squash_option: default_on
+      # Merge checks
+      only_allow_merge_if_pipeline_succeeds: true
+      allow_merge_on_skipped_pipeline: false
+      only_allow_merge_if_all_discussions_are_resolved: true
+      # default value for job timeout is set to 2h (7200s), if required it can be set to higher value in build_timeout (timeout value should be in seconds)
+      build_timeout: 7200
+      # example:
+      # - you need a GitLab CI pipeline within your GitLab project(s)
+      # - fork the project https://gitlab-apertispro.boschdevcloud.com/demo/infrastructure/ci-package-builder into your GitLab project space (project group)
+      #   and reference this pipeline in each of your GitLab projects
+      # - adapt the pipeline according your needs if required (normally not necessary)
+      # - the ci_config_path parameter shall have the value debian/apertispro/.gitlab-ci.yml 
+      # - Refer https://gitlab-apertispro.boschdevcloud.com/demo/infrastructure/ci-package-builder/-/blob/wip/vfn1kor/v2023/README.md?ref_type=heads#branch-specific-configuration to know how to define the yml file.
+      ci_config_path: debian/apertispro/.gitlab-ci.yml
+    protected_branches:
+        # Mention the name of the default/protected branch available in the repository you are trying to apply the rules for.
+        # Example: If your repository is test and contains master as protected branch then mention as master instead of apertispro/*
+      - name: apertispro/*
+        # The GitLab project settings provide a section "Repository"->"Protected branches".
+        # Within this section you can configure who is “Allowed to merge” and “Allowed to push” to protected branches.
+        # By default, only users with the maintainer role can merge changes into a protected branch.
+        # This is reflected in default configuration below. Project team can decide to soften the restriction.
+        # Further information can be found here: https://docs.gitlab.com/ee/user/project/merge_requests/authorization_for_merge_requests.html
+        # Possible parameter values are: DEVELOPER_ACCESS (developers + maintainers), MASTER_ACCESS (maintainers only), NO_ACCESS (no one)
+        merge_access_level: MASTER_ACCESS
+        push_access_level: MASTER_ACCESS # can't be NO_ACCESS as the CI pipeline needs to push directly
+      - name: unstable/*
+        merge_access_level: MASTER_ACCESS
+        push_access_level: MASTER_ACCESS # can't be NO_ACCESS as the CI pipeline needs to push directly
+    variables:
+      # notes: for OSC_USERNAME + OSC_PASSWORD
+      # - if you have a test/demo project and no one else has access to the project you can use your own OBS user name and password
+      # - for a product team you shall request a BOT user and use the OBS user name and password of the BOT user because
+      #   the values are visible for each maintainer of the product team
+      # - please check https://wiki-apertispro.boschdevcloud.com/developer/tutorials/bot_user_account/ for BOT user creation
+      # - ATTENTION: there are limitations while masking the password with special characters on the Gitlab CI/CD variables,
+      #   please consider https://gitlab-apertispro.boschdevcloud.com/help/ci/variables/README#mask-a-cicd-variable during password creation
+      - key: OSC_USERNAME
+        value: your_osc_username
+        variable_type: env_var
+        protected: false
+        masked: false
+      - key: OSC_PASSWORD
+        value: your_osc_password
+        variable_type: env_var
+        protected: false
+        masked: true
+      # notes: for GITLAB_BOT_USERNAME + GITLAB_BOT_PASSWORD
+      # - if you have a test/demo project and no one else has access to the project you can use your own GitLab user name and
+      #   personal access token (PAT) (see https://wiki-apertispro.boschdevcloud.com/developer/tutorials/git_configuration/)
+      # - for a product team you shall request a BOT user and use the GitLab user name and personal access token (PAT) of the
+      #   BOT user because the values are visible for each maintainer of the product team
+      # - please check https://wiki-apertispro.boschdevcloud.com/developer/tutorials/bot_user_account/ for BOT user creation
+      # - ATTENTION: there are limitations while masking the password with special characters on the Gitlab CI/CD variables,
+      #   please consider https://gitlab-apertispro.boschdevcloud.com/help/ci/variables/README#mask-a-cicd-variable during personal access token creation
+      - key: GITLAB_BOT_USERNAME
+        value: your_gitlab_username
+        variable_type: env_var
+        protected: false
+        masked: false
+      - key: GITLAB_BOT_PASSWORD
+        value: your_gitlab_password
+        variable_type: env_var
+        protected: false
+        masked: true
