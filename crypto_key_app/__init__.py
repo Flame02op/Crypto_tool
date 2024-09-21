@@ -10,3 +10,14 @@
 
 
 # AES -> symmetrical (public key)
+
+# For RSA Support below
+# RSASSA-PSS
+# SHA256withRSA
+# sha512WithRSA
+# md5WithRSA
+
+# For Ecdsa
+# SECP256r1
+# Secp256k1
+# Secp128r1

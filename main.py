@@ -1,7 +1,7 @@
 from crypto_key_app import key_management
 from cryptography.hazmat.primitives.asymmetric import rsa
 from crypto_key_app import random_gen
-from crypto_key_app import signatures
+from crypto_key_app import signatures as sign
 from crypto_key_app import key_conversion as convert
 from crypto_key_app import hashlib_hashing as hash
 from crypto_key_app import crypto_hashing as cry_hash
@@ -9,7 +9,21 @@ from crypto_key_app import encryption_decryption as encrypt_decrypt
 
 
 if __name__ == "__main__":
-    # secret_key, public_key = key_management.generate_rsa_key_pair(256)
+    secret_key, public_key = key_management.generate_rsa_key_pair(256)
+    rsa_signature = sign.generate_rsa_signature(secret_key, b"This is a message to be signed", 'md5')
+    sign.verify_rsa_signature(public_key, b"This is a message to be signed", rsa_signature, 'md5')
+    message1 = b"This is a really really long message that is going to be split in 2-3 different message chunks. This is done because the signing depends on the key size which is defined in key_management"
+    message2 = b"This individual chunk is a part of a big data block that has to be signed. Since this data (as a whole) can be bigger in size than the key itself, and thus cannot be signed in a single call"
+    hasher = sign.generate_hash_longData('sha256')
+    sign.update_hash_longData(hasher, message1)
+    sign.update_hash_longData(hasher, message2)
+    rsa_sign =sign.generate_rsa_signature_longData(secret_key,hasher,'sha256')
+    message1 = b"This is a really really long message that is going to be split in 2-3 different message chunks. This is done because the signing depends on the key size which is defined in key_management"
+    message2 = b"This individual chunk is a part of a big data block that has to be signed. Since this data (as a whole) can be bigger in size than the key itself, and thus cannot be signed in a single call"
+    hasher2 = sign.generate_hash_longData('sha256')
+    sign.update_hash_longData(hasher2, message1)
+    sign.update_hash_longData(hasher2, message2)
+    sign.verify_rsa_signature_longData(public_key,hasher2, rsa_sign, 'sha256')
     # print(type(secret_key), " ", type(public_key))
     # print(isinstance(secret_key, rsa.RSAPrivateKey))
     # print(isinstance(public_key, rsa.RSAPublicKey))   
@@ -30,12 +44,12 @@ if __name__ == "__main__":
     # user_hash_algorithm = input("Enter your hash algorithm eg: sha256, sha512 etc : ").lower()
     # digest = cry_hash.calculate_hash(b"This is a message", user_hash_algorithm)
     # print(cry_hash.verify_hash(b"This is a message", digest, user_hash_algorithm))
-    key = random_gen.generate_random_bytes(32)
-    iv = random_gen.generate_random_bytes(16)
-    ciphertext = encrypt_decrypt.aes_encrypt(key, iv, "This is a message to be encrypted", 'CBC')
-    print(ciphertext)
-    plaintext = encrypt_decrypt.aes_decrypt(key, iv, ciphertext)
-    print(f"Readable text {plaintext}")
+    # key = random_gen.generate_random_bytes(32)
+    # iv = random_gen.generate_random_bytes(16)
+    # ciphertext = encrypt_decrypt.aes_encrypt(key, iv, "This is a message to be encrypted", 'CBC')
+    # print(ciphertext)
+    # plaintext = encrypt_decrypt.aes_decrypt(key, iv, ciphertext)
+    # print(f"Readable text {plaintext}")
     
 
     
