@@ -6,6 +6,7 @@ from crypto_key_app import key_conversion as convert
 from crypto_key_app import hashlib_hashing as hash
 from crypto_key_app import crypto_hashing as cry_hash
 from crypto_key_app import encryption_decryption as encrypt_decrypt
+from crypto_key_app import cmac
 
 
 if __name__ == "__main__":
@@ -44,12 +45,34 @@ if __name__ == "__main__":
     # user_hash_algorithm = input("Enter your hash algorithm eg: sha256, sha512 etc : ").lower()
     # digest = cry_hash.calculate_hash(b"This is a message", user_hash_algorithm)
     # print(cry_hash.verify_hash(b"This is a message", digest, user_hash_algorithm))
+<<<<<<< Updated upstream
     # key = random_gen.generate_random_bytes(32)
+=======
+    key = random_gen.generate_random_bytes(24)#16,32,24
+>>>>>>> Stashed changes
     # iv = random_gen.generate_random_bytes(16)
     # ciphertext = encrypt_decrypt.aes_encrypt(key, iv, "This is a message to be encrypted", 'CBC')
     # print(ciphertext)
     # plaintext = encrypt_decrypt.aes_decrypt(key, iv, ciphertext)
     # print(f"Readable text {plaintext}")
+<<<<<<< Updated upstream
+=======
+    message = b'test message'
+
+    # Generate CMAC for the message
+    cmac_value = cmac.generate_cmac(key, message)
+    print(f"Generated CMAC: {cmac_value.hex()}")
+
+    # Verify the CMAC and get the calculated CMAC
+    # try:
+    #     calculated_cmac = cmac.verify_cmac(key, message, cmac_value)
+    #     print(f"Verified CMAC: {calculated_cmac.hex()}")
+    # except cmac.InvalidSignature as e:
+    #     print(str(e))
+
+
+
+>>>>>>> Stashed changes
     
 
     
