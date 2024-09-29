@@ -1,5 +1,6 @@
 import time
 from cryptography.hazmat.primitives import cmac
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.exceptions import InvalidSignature
 
@@ -23,12 +24,17 @@ def generate_cmac(key, message):
         return None
 
 def verify_cmac(key, message, expected_cmac):
-    cmac_obj = cmac.CMAC(algorithms.AES(key))
+    validate_key_length(key)
+    validate_message(message)
+    cmac_obj = cmac.CMAC(algorithms.AES(key), backend=default_backend())
     cmac_obj.update(message)
     try:
         cmac_obj.verify(expected_cmac)
         return True
     except InvalidSignature:
+        print(f"Verification failed")
+    except Exception as e:
+        print(f"Verification failed: {e}")
         return False
    
 def generate_cmac_with_timestamp(key, message):
@@ -50,7 +56,7 @@ def verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_thre
     validate_key_length(key)
     validate_message(message)
     # Verify that the timestamp is within the acceptable threshold
-    current_time = int(time.time())
+    current_time = time.time()
     message_time = int(timestamp.decode('utf-8'))
     if abs(current_time - message_time) > time_threshold:
         print("Timestamp is not within the acceptable range!")

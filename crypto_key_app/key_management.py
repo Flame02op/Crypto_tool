@@ -16,7 +16,7 @@ def generate_rsa_key_pair(key_size):
     if str(key_size) in keySize:
         key_size = keySize[str(key_size)]
     else:
-        if int(key_size) < '256' :
+        if int(key_size) < 256 :
             raise ValueError("Keys with size less than 1024 bits or 256 bytes are generally considered to be unsecured.")
         else:
             raise ValueError(f"Key with given size {key_size} Bytes is not supported")
