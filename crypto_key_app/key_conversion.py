@@ -2,6 +2,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 # Convert PEM key to hex
+
+# TO DO : add support to public keys
 def pem_to_hex(pem_key):
     if isinstance(pem_key, rsa.RSAPrivateKey):
         pem_bytes = pem_key.private_bytes(
