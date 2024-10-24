@@ -1,8 +1,10 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 
 curves = {
+    'ed25519'   : ed25519,
     'secp192r1' : ec.SECP192R1,
     'secp256r1' : ec.SECP256R1,
     'secp384r1' : ec.SECP384R1,
@@ -37,6 +39,11 @@ def generate_ecdsa_key_pair(curve = 'secp256r1'):
     return private_key, public_key
 
 
+def generate_ed25519_key_pair():
+    private_key = ed25519.Ed25519PrivateKey.generate()
+    public_key = private_key.public_key()
+    return private_key, public_key
+    
 def show_key_pair(private_key, public_key):
     # Serialize private key to PEM format
     private_pem = private_key.private_bytes(
