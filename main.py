@@ -90,6 +90,7 @@ if __name__ == "__main__":
     # ecdsa_sign.update_hash_longMessage(hasher2, message1)
     # ecdsa_sign.update_hash_longMessage(hasher2, message2)
     # ecdsa_sign.verify_ecdsa_signature_longMessage(public_key,hasher2, ecdsa_signature, 'sha256')
+    
     pass
 
     
