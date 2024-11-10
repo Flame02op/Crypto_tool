@@ -9,7 +9,148 @@ from crypto_key_app import crypto_hashing as cry_hash
 from crypto_key_app import encryption_decryption as encrypt_decrypt
 from crypto_key_app import cmac
 from crypto_key_app import crc
+from crypto_key_app import ed25519_signatures as ed25519_sign
 import time
+import os
+
+private_key = ""
+public_key = ""
+longMessage_callOut  = 0
+hasher = ""
+
+def createTempDir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def checkFilePath(path):
+    if not os.path.exists(path):
+        return False
+    else:
+        return True
+
+def If_load_key(key_type, key_alg, filepath):
+    global private_key, public_key
+    if checkFilePath(filepath) == False:
+        return ("Warning", f"The file path {filepath} does not exist")
+    else:
+        if key_type == "Private":
+            private_key = keys.load_key(key_alg, filepath)
+        else:
+            public_key = keys.load_key(key_alg, filepath)
+
+    
+def If_generateKey(key_type, key_alg):
+    global public_key, private_key
+    if key_type == "RSA":
+        private_key, public_key = keys.generate_rsa_key_pair(key_alg)
+    elif key_type == "ECDSA":
+        private_key, public_key = keys.generate_ecdsa_key_pair(key_alg) 
+    else:
+        private_key, public_key = keys.generate_ed25519_key_pair(key_alg)
+
+    createTempDir("./Temp/Keys")
+    with open("./Temp/Keys/private_key.pem", 'wb') as key_file:
+            key_file.write(private_key)
+
+    with open("./Temp/Keys/public_key.pem", 'wb') as key_file:
+            key_file.write(public_key)
+   
+
+def If_generateSign(key_type, key, input_file, hash):
+    if checkFilePath(input_file) == False:
+        return ("Warning", f"The file path {input_file} does not exist")
+    else:
+        with open(input_file) as fin:
+            message = fin.read()
+
+        _, input_file = os.path.split(input_file)
+        createTempDir("./Temp/Signatures")
+
+        if key_type == "RSA":
+            signature = rsa_sign.generate_rsa_signature(key, message, hash)
+        elif key_type == "ECDSA":
+            signature = ecdsa_sign.generate_ecdsa_signature(key, message, hash)       
+        else:
+            signature = ed25519_sign.generate_ed25519_signature(key, message, hash)
+            
+        with open(f"./Temp/Signatures/{input_file}.Signed", "wb") as sign_file:
+                sign_file.write(signature)
+
+def If_generateHashForLongMessage(key_type, input_file, hash):
+    global longMessage_callOut
+    if checkFilePath(input_file) == False:
+            return ("Warning", f"The file path {input_file} does not exist")
+    else:
+        with open(input_file, "rb") as fin:
+                message = fin.read()
+
+    if longMessage_callOut == 0:     
+        if key_type == "RSA":
+            hasher = rsa_sign.generate_hash_longMessage(hash)
+            hasher = rsa_sign.update_hash_longMessage(hasher, message)
+        elif key_type == "ECDSA":
+            hasher = ecdsa_sign.generate_hash_longMessage(hash) 
+            hasher = ecdsa_sign.update_hash_longMessage(hasher, message)    
+        longMessage_callOut += 1
+
+    else:
+        if key_type == "RSA":
+            hasher = rsa_sign.update_hash_longMessage(hasher, message)
+        elif key_type == "ECDSA":
+            hasher = ecdsa_sign.update_hash_longMessage(hasher, message) 
+
+# To do
+def If_generateSignForLongMessage(key_type, key, input_file, hash):   
+    if longMessage_callOut != 0:
+        if checkFilePath(input_file) == False:
+           return ("Warning", f"The file path {input_file} does not exist")
+        else:
+            with open(input_file, "rb") as fin:
+                message = fin.read()
+        _, input_file = os.path.split(input_file)
+        if not os.path.exists("./Temp/Signatures"):
+            os.makedirs("./Temp/Signatures")
+
+        if key_type == "RSA":
+            signature = rsa_sign.generate_rsa_signature_longMessage(key, hasher, hash)
+        elif key_type == "ECDSA":
+            signature = ecdsa_sign.generate_ecdsa_signature_longMessage(key, hasher, hash) 
+        else:
+            return ("Warning", "Ed25519 does not support long message signing")
+
+
+def If_verifySignature(publicKey, input_file, key_type, signature_file, selected_hash):
+    if checkFilePath(input_file) == False or checkFilePath(signature_file) == False:
+        return("Warning",  f"The file path {input_file} or {signature_file} does not exist")
+    else:
+        with open(input_file, "rb") as fin:
+            message = fin.read()
+        with open(signature_file, "rb") as fin:
+            signature = fin.read()
+
+        if key_type == "RSA":
+            rsa_sign.verify_rsa_signature(publicKey, message, signature, selected_hash)
+        elif key_type == "ECDSA":
+            ecdsa_sign.verify_ecdsa_signature(publicKey, message, signature, selected_hash)
+        else:
+            ed25519_sign.verify_ed25519_signature(publicKey, message, signature, selected_hash)
+    
+def If_VerifySignature_LongMessage(publicKey, input_file, key_type, signature_file, selected_hash):
+    if checkFilePath(input_file) == False or checkFilePath(signature_file) == False:
+        return("Warning",  f"The file path {input_file} or {signature_file} does not exist")
+    else:
+        with open(input_file, "rb") as fin:
+            message = fin.read()
+        with open(signature_file, 'rb') as fin:
+            signature = fin.read()
+
+        if key_type == "RSA":
+            rsa_sign.verify_rsa_signature_longMessage(publicKey, hasher, signature, selected_hash)
+        elif key_type == "ECDSA":
+            ecdsa_sign.verify_ecdsa_signature_longMessage(publicKey, hasher, signature, selected_hash)
+        else:
+            return ("Warning", "Ed25519 does not support long message verification") 
+    
 
 if __name__ == "__main__":
     # secret_key, public_key = keys.generate_rsa_key_pair(256)

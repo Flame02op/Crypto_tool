@@ -1,7 +1,6 @@
 from cryptography.hazmat.primitives.asymmetric import padding, utils
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
 
 signature_schemes ={
     "sha256"        : hashes.SHA256,

@@ -4,7 +4,6 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 
 curves = {
-    'ed25519'   : ed25519,
     'secp192r1' : ec.SECP192R1,
     'secp256r1' : ec.SECP256R1,
     'secp384r1' : ec.SECP384R1,
@@ -60,3 +59,42 @@ def show_key_pair(private_key, public_key):
 
     print("Private Key:\n", private_pem.decode('utf-8'))
     print("Public Key:\n", public_pem.decode('utf-8'))
+
+def load_key(key_type, file_path):
+        # Ensure the key type is valid
+    if key_type not in {'RSA', 'ECDSA', 'ED25519'}:
+        raise ValueError("Invalid key type. Use 'RSA', 'ECDSA', or 'ED25519'.")
+
+    try:
+        # Read the key file
+        with open(file_path, 'rb') as key_file:
+            key_data = key_file.read()
+
+        # Attempt to load the key
+        try:
+            # Try loading as PEM first
+            key = serialization.load_pem_private_key(key_data, password=None)
+        except ValueError:
+            try:
+                key = serialization.load_pem_public_key(key_data)
+            except ValueError:
+                # If PEM fails, try DER
+                try:
+                    key = serialization.load_der_private_key(key_data, password=None)
+                except ValueError:
+                    key = serialization.load_der_public_key(key_data)
+
+        # Validate that the loaded key matches the expected type
+        if key_type == 'RSA' and not isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):
+            raise ValueError("Loaded key is not of type RSA.")
+        elif key_type == 'ECDSA' and not isinstance(key, (ec.EllipticCurvePrivateKey, ec.EllipticCurvePublicKey)):
+            raise ValueError("Loaded key is not of type ECDSA.")
+        elif key_type == 'ED25519' and not isinstance(key, (ed25519.Ed25519PrivateKey, ed25519.Ed25519PublicKey)):
+            raise ValueError("Loaded key is not of type ED25519.")
+
+        return key
+
+    except FileNotFoundError:
+        raise ValueError(f"File not found: {file_path}")
+    except Exception as e:
+        raise ValueError(f"An error occurred while loading the key: {e}")

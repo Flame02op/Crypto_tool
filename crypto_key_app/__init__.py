@@ -21,3 +21,12 @@
 # SECP256r1
 # Secp256k1
 # Secp128r1
+
+# RSA-OAEP (Optimal Asymmetric Encryption Padding): While primarily used for encryption,
+# RSA-OAEP can also be used in signature schemes.
+
+# RSA-PSS (Probabilistic Signature Scheme): This is a more modern and secure variant of RSA signatures.
+# It uses a probabilistic padding scheme, making it more resistant to certain types of cryptographic attacks.
+
+# RSA-PKCS#1 v1.5: This is the original RSA signature scheme defined in PKCS#1 v1.5.
+# It uses a specific padding scheme for the message before signing.

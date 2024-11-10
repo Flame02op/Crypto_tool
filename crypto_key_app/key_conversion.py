@@ -17,6 +17,7 @@ keyFormat = {
 # To do : check if DER support is needed
 # PEM (Privacy-Enhanced Mail): This is a text-based encoding that wraps binary data in a base64 encoding and includes header and footer markers such as -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----.
 # PEM is often used when transferring keys as plain text files.
+
 # DER (Distinguished Encoding Rules): This is a binary format for data structures, more compact than PEM, and does not include the base64 encoding or the header/footer markers.
 # DER-encoded keys are purely binary and are often used in certificates or when keys need to be processed in a more machine-efficient way.
 
