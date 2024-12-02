@@ -11,7 +11,6 @@ secure_algorithms = {
     'blake2s'  : hashlib.blake2s
     
 }
-
 # Deprecated due to collision attacks
 # Not recommended to use 
 non_secure_algorithms ={
@@ -24,14 +23,14 @@ def calculate_hash(data, algorithm='sha256'):
     if algorithm in secure_algorithms:
         hash_obj = secure_algorithms[algorithm]()
     elif algorithm in non_secure_algorithms:
-        if input(f"The algorithm '{algorithm}' is not recommended for security reasons, do you still want to proceed? Enter yes or no : ").lower() == "yes": 
-            hash_obj = non_secure_algorithms[algorithm]()
-        else:
-            return None
+        hash_obj = non_secure_algorithms[algorithm]()
     else:
-        raise ValueError("Unsupported algorithm")
-    hash_obj.update(data)
-    return hash_obj.hexdigest()
+        return("Failure", "Unsupported algorithm")
+    try:
+        hash_obj.update(data)
+        return ("Success", hash_obj.hexdigest())
+    except Exception as e:
+        return ("Error", str(e))
 
 def verify_hash(data, expected_hash, algorithm='sha256'):
     if algorithm in secure_algorithms:
@@ -39,6 +38,12 @@ def verify_hash(data, expected_hash, algorithm='sha256'):
     elif algorithm in non_secure_algorithms:
         hash_obj = non_secure_algorithms[algorithm]()
     else:
-        raise ValueError("Unsupported algorithm")
-    hash_obj.update(data)
-    return expected_hash == hash_obj.hexdigest()
+        return("Failure", "Unsupported algorithm")
+    try:
+        hash_obj.update(data)
+        if expected_hash == hash_obj.hexdigest():
+            return ("Success", "Hash Verified")
+        else:
+            return("Failure", "Invalid Hash")
+    except Exception as e:
+        return("Error", str(e))

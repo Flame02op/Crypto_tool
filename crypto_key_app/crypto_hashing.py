@@ -1,7 +1,6 @@
 # This code is slightly slow when working with complex data as it uses the rust library at the
 # backend. Thus it is an overkill for hashing when we have the hashlib library. But to maintain
 # consistency across the tool, this code can be used.
-
 from cryptography.hazmat.primitives import hashes
 
 secure_algorithms = {

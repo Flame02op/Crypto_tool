@@ -31,30 +31,31 @@ def determine_key_format(key):
 
 # Convert a PEM key to a hexadecimal string
 def pem_to_hex(pem_key):
-    key_format, key_type = determine_key_format(pem_key)
+    try:
+        key_format, key_type = determine_key_format(pem_key)
 
-    if key_type == "private_key":
-        pem_bytes = pem_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8 if key_format != "RSA" else serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        )
-    elif key_type == "public_key":
-        pem_bytes = pem_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-    else:
-        raise ValueError("Unsupported key type for conversion to hex")
-
-    return pem_bytes.hex()
+        if key_type == "private_key":
+            pem_bytes = pem_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8 if key_format != "RSA" else serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+        elif key_type == "public_key":
+            pem_bytes = pem_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+        else:
+            raise ValueError("Unsupported key type for conversion to hex")
+        return ("Success", pem_bytes.hex())
+    except Exception as e:
+        return ("Error", str(e))
 
 # Convert a hexadecimal string to a PEM key object
 def hex_to_pem(hex_key):
     try:
         # Convert the hex string back to PEM bytes
         pem_bytes = bytes.fromhex(hex_key)
-
         # Attempt to load the key as a private or public key
         try:
             key = serialization.load_pem_private_key(
@@ -66,9 +67,12 @@ def hex_to_pem(hex_key):
             try:
                 key = serialization.load_pem_public_key(pem_bytes)
             except ValueError as e:
-                raise ValueError("Invalid key data: unable to parse as a valid private or public key") from e
-        
-        return key
+                return ("Failure", "Invalid key data: unable to parse as a valid private or public key")
+            except Exception as e:
+                return ("Error", str(e))
+        return ("Success", key)
 
-    except ValueError as e:
-        raise ValueError("Invalid hexadecimal string: could not decode") from e
+    except ValueError:
+        return ("Failure", "Invalid hexadecimal string: could not decode")
+    except Exception as e:
+        return ("Error" , str(e))
