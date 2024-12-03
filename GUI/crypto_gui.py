@@ -48,6 +48,7 @@ class mainWindow(QWidget):
         self.t1_mode_dropdown = QComboBox()
         self.t1_mode_dropdown.addItems([
             "Key Generation",
+            "Key Conversion",
             "Generate Sign",
             "Verify Sign",
             "Generate Sign for Long Message",
@@ -64,6 +65,14 @@ class mainWindow(QWidget):
         self.t1_ed25519_radio = QRadioButton("ED25519")
         self.t1_rsa_radio.setChecked(True)
 
+        self.t1_key_type_dropdown = QComboBox()
+        self.t1_key_type_dropdown.addItems(["RSA", "ECDSA", "ED25519", "Symmetric key"])
+        self.t1_key_conversion_mode_label = QLabel("Conversion mode:")
+        self.t1_pem_to_hex_radio = QRadioButton("PEM to HEX")
+        self.t1_hex_to_pem_radio = QRadioButton("HEX to PEM")  
+        self.t1_pem_to_hex_radio.toggled.connect(lambda : self.t1_update_mode(self.t1_mode_dropdown.currentText()))
+        self.t1_hex_to_pem_radio.toggled.connect(lambda : self.t1_update_mode(self.t1_mode_dropdown.currentText()))
+        
         # Algorithm Dropdown
         self.t1_algorithm_label = QLabel("Algorithm:")
         self.t1_algorithm_dropdown = QComboBox()
@@ -78,11 +87,15 @@ class mainWindow(QWidget):
         # Components for Keys & Signature Mode
         self.t1_generate_key_btn = QPushButton("Generate Key")
         self.t1_generate_key_btn.clicked.connect(self.t1_generate_key)
+        self.t1_key_conversion_btn = QPushButton("Convert")
+        self.t1_key_conversion_btn.clicked.connect(self.t1_convert_key)
         self.t1_key_type_label = QLabel("key type:")
         self.t1_key_file_label = QLabel("Load Key")
         self.t1_input_file_label = QLabel("Input File:")
         self.t1_hasher_file_label = QLabel("Hasher File:")
         self.t1_signature_file_label = QLabel("Signature File:")
+        self.t1_pem_to_hex_label = QLabel("PEM to HEX conversion")
+        self.t1_hex_to_pem_label = QLabel("HEX to PEM conversion")
 
         self.t1_private_key_file_btn = QPushButton("Load Private Key")
         self.t1_private_key_file_btn.clicked.connect(partial(self.load_private_key, "tab1"))
@@ -97,6 +110,16 @@ class mainWindow(QWidget):
         self.t1_Key_size_label = QLabel("Key size:")
         self.t1_key_size_dropdown = QComboBox()
         self.t1_key_size_dropdown.addItems(["256", "512", "1024"])
+
+        self.t1_pem_key_file_btn = QPushButton("Load PEM Key")
+        self.t1_pem_key_file_btn.clicked.connect(self.t1_load_pem_key)
+        self.t1_pem_key_file_path_display = QLineEdit()
+        self.t1_pem_key_file_path_display.setReadOnly(True)
+
+        self.t1_hex_key_file_btn = QPushButton("Load HEX Key")
+        self.t1_hex_key_file_btn.clicked.connect(self.t1_load_hex_key)
+        self.t1_hex_key_file_path_display = QLineEdit()
+        self.t1_hex_key_file_path_display.setReadOnly(True)
         
         self.t1_generate_signature_btn = QPushButton("Generate Signature")
         self.t1_generate_signature_btn.clicked.connect(self.t1_generate_signature)
@@ -136,16 +159,39 @@ class mainWindow(QWidget):
 
         # Key Type Selection
         t1_layout.addWidget(self.t1_key_type_label, 1, 0)
-        t1_layout.addWidget(self.t1_rsa_radio, 1, 1)
+        t1_layout.addWidget(self.t1_rsa_radio, 1, 1) 
         t1_layout.addWidget(self.t1_ecdsa_radio, 1, 2)
         t1_layout.addWidget(self.t1_ed25519_radio, 1, 3)
+
+
+        # key_type_dropdown
+        t1_layout.addWidget(self.t1_key_type_dropdown, 1, 1, 1, 3)
 
         # Algorithm Dropdown
         t1_layout.addWidget(self.t1_algorithm_label, 2, 0)
         t1_layout.addWidget(self.t1_algorithm_dropdown, 2, 1, 1, 3)
 
+        # Key conversion mode radio
+        t1_layout.addWidget(self.t1_key_conversion_mode_label, 2, 0)
+        t1_layout.addWidget(self.t1_pem_to_hex_radio, 2, 1)
+        t1_layout.addWidget(self.t1_hex_to_pem_radio, 2, 2)
+        
+        # key size dropdown
         t1_layout.addWidget(self.t1_Key_size_label, 3, 0)
         t1_layout.addWidget(self.t1_key_size_dropdown, 3, 1, 1, 3)
+
+        # Key conversion PEM to HEX
+        t1_layout.addWidget(self.t1_pem_to_hex_label, 3, 0)
+        t1_layout.addWidget(self.t1_pem_key_file_btn, 3, 1)
+        t1_layout.addWidget(self.t1_pem_key_file_path_display, 3, 2, 1, 2)
+
+        # Key conversion HEX to PEM
+        t1_layout.addWidget(self.t1_hex_to_pem_label, 3, 0)
+        t1_layout.addWidget(self.t1_hex_key_file_btn, 3, 1)
+        t1_layout.addWidget(self.t1_hex_key_file_path_display, 3, 2, 1, 2)
+
+        # convert button
+        t1_layout.addWidget(self.t1_key_conversion_btn, 4, 0, 1, 4)
 
         # Keys
         t1_layout.addWidget(self.t1_generate_key_btn, 4, 0, 1, 4)
@@ -496,7 +542,8 @@ class mainWindow(QWidget):
     def t1_update_mode(self, mode):
         """Update the visibility of components based on the selected mode."""
         # Determine mode states
-        key_generation_mode = "key" in mode.lower()
+        key_conversion_mode = "conversion" in mode.lower()
+        key_generation_mode = "key" in mode.lower() and not key_conversion_mode
         generate_sign_mode = "generate" in mode.lower() and "long" not in mode.lower()
         generate_long_sign_mode = "generate" in mode.lower() and "long" in mode.lower()
         verify_sign_mode = "verify" in mode.lower() and "long" not in mode.lower()
@@ -511,6 +558,21 @@ class mainWindow(QWidget):
         self.t1_generate_key_btn.setVisible(key_generation_mode)
         self.t1_Key_size_label.setVisible(key_generation_mode and self.t1_rsa_radio.isChecked())
         self.t1_key_size_dropdown.setVisible(key_generation_mode and self.t1_rsa_radio.isChecked())
+
+        # Key conversion components
+        self.t1_algorithm_label.setVisible(not key_conversion_mode)
+        self.t1_algorithm_dropdown.setVisible(not key_conversion_mode)
+        self.t1_key_conversion_mode_label.setVisible(key_conversion_mode)
+        self.t1_key_type_dropdown.setVisible(key_conversion_mode)
+        self.t1_pem_to_hex_radio.setVisible(key_conversion_mode)
+        self.t1_hex_to_pem_radio.setVisible(key_conversion_mode)
+        self.t1_pem_to_hex_label.setVisible(key_conversion_mode and self.t1_pem_to_hex_radio.isChecked())
+        self.t1_pem_key_file_btn.setVisible(key_conversion_mode and self.t1_pem_to_hex_radio.isChecked())
+        self.t1_pem_key_file_path_display.setVisible(key_conversion_mode and self.t1_pem_to_hex_radio.isChecked())
+        self.t1_hex_to_pem_label.setVisible(key_conversion_mode and self.t1_hex_to_pem_radio.isChecked())
+        self.t1_hex_key_file_btn.setVisible(key_conversion_mode and self.t1_hex_to_pem_radio.isChecked())
+        self.t1_hex_key_file_path_display.setVisible(key_conversion_mode and self.t1_hex_to_pem_radio.isChecked())
+        self.t1_key_conversion_btn.setVisible(key_conversion_mode)
 
         # Private key (generation or signature generation modes)
         self.t1_private_key_file_btn.setVisible(generate_mode)
@@ -531,9 +593,9 @@ class mainWindow(QWidget):
         self.t1_verify_signature_btn.setVisible(verify_mode)
 
         # Input file (not used in key generation mode)
-        self.t1_input_file_label.setVisible(not key_generation_mode and not verify_long_sign_mode)
-        self.t1_input_file_btn.setVisible(not key_generation_mode and not verify_long_sign_mode)
-        self.t1_input_file_path_display.setVisible(not key_generation_mode and not verify_long_sign_mode)
+        self.t1_input_file_label.setVisible(not key_generation_mode and not verify_long_sign_mode and not key_conversion_mode)
+        self.t1_input_file_btn.setVisible(not key_generation_mode and not verify_long_sign_mode and not key_conversion_mode)
+        self.t1_input_file_path_display.setVisible(not key_generation_mode and not verify_long_sign_mode and not key_conversion_mode)
 
         # Hasher file and buttons (only for long message modes)
         self.t1_hasher_file_label.setVisible(verify_long_sign_mode or generate_long_sign_mode)
@@ -718,6 +780,28 @@ class mainWindow(QWidget):
 
     def t1_generate_key(self):
         QMessageBox.information(self, "Key Generation", "Key generated successfully!")
+
+    def t1_load_pem_key(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
+        if file_path:
+            self.t1_pem_key_file_path_display.setText(file_path)
+
+    def t1_load_hex_key(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.hex);;All Files (*)')
+        if file_path:
+            self.t1_hex_key_file_path_display.setText(file_path)
+
+    def t1_convert_key(self):
+        if self.t1_pem_to_hex_radio.isChecked():
+            if not self.t1_pem_key_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load a PEM key for conversion.")
+        elif self.t1_hex_to_pem_radio.isChecked():
+            if not self.t1_hex_key_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load a hex key for conversion.")
+        else:
+            QMessageBox.warning(self, "Missing Input", "Please select the conversion mode and load appropriate key for conversion.")
+
+        # QMessageBox.information(self, "Key Conversion", "Key generated successfully!")
 
     def load_private_key(self, tab):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
