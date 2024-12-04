@@ -55,18 +55,18 @@ class mainWindow(QWidget):
             "Verify Sign for Long Message"
         ])
         self.t1_mode_dropdown.currentTextChanged.connect(lambda: self.t1_update_mode(self.t1_mode_dropdown.currentText()))
-        self.t1_mode_dropdown.currentTextChanged.connect(lambda: self.update_algorithm_options(self.t1_get_selected_key_type()))
+        self.t1_mode_dropdown.currentTextChanged.connect(lambda: self.t1_update_algorithm_options())
         self.t1_call_count = 0
 
         # Key Type Selection
         self.t1_key_type_label = QLabel("Key Type:")
-        self.t1_rsa_radio = QRadioButton("RSA")
-        self.t1_ecdsa_radio = QRadioButton("ECDSA")
-        self.t1_ed25519_radio = QRadioButton("ED25519")
-        self.t1_rsa_radio.setChecked(True)
-
         self.t1_key_type_dropdown = QComboBox()
         self.t1_key_type_dropdown.addItems(["RSA", "ECDSA", "ED25519", "Symmetric key"])
+        self.t1_key_type_dropdown.setCurrentText("RSA")
+        self.t1_key_type_dropdown.currentTextChanged.connect(lambda: self.t1_update_mode(self.t1_mode_dropdown.currentText()))
+        self.t1_key_type_dropdown.currentTextChanged.connect(lambda: self.t1_update_algorithm_options())
+
+        # key conversion
         self.t1_key_conversion_mode_label = QLabel("Conversion mode:")
         self.t1_pem_to_hex_radio = QRadioButton("PEM to HEX")
         self.t1_hex_to_pem_radio = QRadioButton("HEX to PEM")  
@@ -76,26 +76,37 @@ class mainWindow(QWidget):
         # Algorithm Dropdown
         self.t1_algorithm_label = QLabel("Algorithm:")
         self.t1_algorithm_dropdown = QComboBox()
-        self.update_algorithm_options("RSA")  # Default for RSA
+        self.t1_update_algorithm_options()  # Default for RSA
         
-        # Radio button connections to update algorithm options
-        self.t1_rsa_radio.toggled.connect(lambda: self.update_algorithm_options("RSA"))
-        self.t1_ecdsa_radio.toggled.connect(lambda: self.update_algorithm_options("ECDSA"))
-        self.t1_ed25519_radio.toggled.connect(lambda: self.update_algorithm_options("ED25519"))
-        self.t1_rsa_radio.toggled.connect(lambda: self.t1_update_mode(self.t1_mode_dropdown.currentText()))
+        # Key Generation section
+        self.t1_Key_size_label = QLabel("Key size:")
+        self.t1_key_size_dropdown = QComboBox()
+        self.t1_key_size_dropdown.addItems(["256", "512", "1024"])
 
-        # Components for Keys & Signature Mode
         self.t1_generate_key_btn = QPushButton("Generate Key")
         self.t1_generate_key_btn.clicked.connect(self.t1_generate_key)
-        self.t1_key_conversion_btn = QPushButton("Convert")
-        self.t1_key_conversion_btn.clicked.connect(self.t1_convert_key)
+
+        # Key conversion section
         self.t1_key_type_label = QLabel("key type:")
-        self.t1_key_file_label = QLabel("Load Key")
-        self.t1_input_file_label = QLabel("Input File:")
-        self.t1_hasher_file_label = QLabel("Hasher File:")
-        self.t1_signature_file_label = QLabel("Signature File:")
+
         self.t1_pem_to_hex_label = QLabel("PEM to HEX conversion")
         self.t1_hex_to_pem_label = QLabel("HEX to PEM conversion")
+
+        self.t1_pem_key_file_btn = QPushButton("Load PEM Key")
+        self.t1_pem_key_file_btn.clicked.connect(self.t1_load_pem_key)
+        self.t1_pem_key_file_path_display = QLineEdit()
+        self.t1_pem_key_file_path_display.setReadOnly(True)
+
+        self.t1_hex_key_file_btn = QPushButton("Load HEX Key")
+        self.t1_hex_key_file_btn.clicked.connect(self.t1_load_hex_key)
+        self.t1_hex_key_file_path_display = QLineEdit()
+        self.t1_hex_key_file_path_display.setReadOnly(True)
+
+        self.t1_key_conversion_btn = QPushButton("Convert")
+        self.t1_key_conversion_btn.clicked.connect(self.t1_convert_key)
+
+        # Key file section
+        self.t1_key_file_label = QLabel("Load Key")
 
         self.t1_private_key_file_btn = QPushButton("Load Private Key")
         self.t1_private_key_file_btn.clicked.connect(partial(self.load_private_key, "tab1"))
@@ -107,47 +118,39 @@ class mainWindow(QWidget):
         self.t1_public_key_file_path_display = QLineEdit()
         self.t1_public_key_file_path_display.setReadOnly(True)
 
-        self.t1_Key_size_label = QLabel("Key size:")
-        self.t1_key_size_dropdown = QComboBox()
-        self.t1_key_size_dropdown.addItems(["256", "512", "1024"])
-
-        self.t1_pem_key_file_btn = QPushButton("Load PEM Key")
-        self.t1_pem_key_file_btn.clicked.connect(self.t1_load_pem_key)
-        self.t1_pem_key_file_path_display = QLineEdit()
-        self.t1_pem_key_file_path_display.setReadOnly(True)
-
-        self.t1_hex_key_file_btn = QPushButton("Load HEX Key")
-        self.t1_hex_key_file_btn.clicked.connect(self.t1_load_hex_key)
-        self.t1_hex_key_file_path_display = QLineEdit()
-        self.t1_hex_key_file_path_display.setReadOnly(True)
-        
-        self.t1_generate_signature_btn = QPushButton("Generate Signature")
-        self.t1_generate_signature_btn.clicked.connect(self.t1_generate_signature)
-
-        self.t1_signature_file_btn = QPushButton("Load Signature File")
-        self.t1_signature_file_btn.clicked.connect(self.t1_load_signature_file)
-        self.t1_signature_file_path_display = QLineEdit()
-        self.t1_signature_file_path_display.setReadOnly(True)
-
-        self.t1_verify_signature_btn = QPushButton("Verify Signature")
-        self.t1_verify_signature_btn.clicked.connect(self.t1_verify_signature)
+        # Input file section
+        self.t1_input_file_label = QLabel("Input File:")
 
         self.t1_input_file_btn = QPushButton("Load Input File")
         self.t1_input_file_btn.clicked.connect(partial(self.load_input_file, "tab1"))
         self.t1_input_file_path_display = QLineEdit()
         self.t1_input_file_path_display.setReadOnly(True)
 
-        # Long message-related buttons
+        # Long Signature file section
+        self.t1_hasher_file_label = QLabel("Hasher File:")
+        self.t1_hasher_file_btn = QPushButton("Load Hasher File")
+        self.t1_hasher_file_btn.clicked.connect(self.t1_load_hasher_file)
+        self.t1_hasher_file_path = QLineEdit()
+        self.t1_hasher_file_path.setReadOnly(True)
+
         self.t1_generate_hasher_btn = QPushButton("Generate Hasher")
         self.t1_generate_hasher_btn.clicked.connect(self.t1_generate_hasher)
 
         self.t1_update_hasher_btn = QPushButton("Update Hasher")
         self.t1_update_hasher_btn.clicked.connect(self.t1_update_hasher)
 
-        self.t1_hasher_file_btn = QPushButton("Load Hasher File")
-        self.t1_hasher_file_btn.clicked.connect(self.t1_load_hasher_file)
-        self.t1_hasher_file_path = QLineEdit()
-        self.t1_hasher_file_path.setReadOnly(True)
+        # Signature file section
+        self.t1_signature_file_label = QLabel("Signature File:")
+        self.t1_signature_file_btn = QPushButton("Load Signature File")
+        self.t1_signature_file_btn.clicked.connect(self.t1_load_signature_file)
+        self.t1_signature_file_path_display = QLineEdit()
+        self.t1_signature_file_path_display.setReadOnly(True)
+
+        self.t1_generate_signature_btn = QPushButton("Generate Signature")
+        self.t1_generate_signature_btn.clicked.connect(self.t1_generate_signature)
+
+        self.t1_verify_signature_btn = QPushButton("Verify Signature")
+        self.t1_verify_signature_btn.clicked.connect(self.t1_verify_signature)
 
         # Layout
         t1_layout = QGridLayout()
@@ -159,12 +162,6 @@ class mainWindow(QWidget):
 
         # Key Type Selection
         t1_layout.addWidget(self.t1_key_type_label, 1, 0)
-        t1_layout.addWidget(self.t1_rsa_radio, 1, 1) 
-        t1_layout.addWidget(self.t1_ecdsa_radio, 1, 2)
-        t1_layout.addWidget(self.t1_ed25519_radio, 1, 3)
-
-
-        # key_type_dropdown
         t1_layout.addWidget(self.t1_key_type_dropdown, 1, 1, 1, 3)
 
         # Algorithm Dropdown
@@ -241,11 +238,10 @@ class mainWindow(QWidget):
         self.t2_cbc_radio.setChecked(True)
         self.t2_rsa_oaep_radio.toggled.connect(self.t2_update_mode)
 
-
         # Algorithm Dropdown for Hashing
         self.t2_algorithm_label = QLabel("Algorithm:")
         self.t2_algorithm_dropdown = QComboBox()
-        self.t2_algorithm_dropdown.addItems(['SHA-224','SHA-256', 'SHA-384', 'SHA-512', 'SHA3-256', 'SHA3-384', 'SHA3-512', 'blake2b', 'blake2s', 'md5', 'SHA-1'])
+        self.t2_algorithm_dropdown.addItems(['SHA224','SHA256', 'SHA384', 'SHA512', 'SHA3-256', 'SHA3-384', 'SHA3-512', 'blake2b', 'blake2s', 'md5', 'SHA-1'])
 
         # Input File Section
         self.t2_input_file_label = QLabel("Input File:")
@@ -332,7 +328,6 @@ class mainWindow(QWidget):
         t2_layout.addWidget(self.t2_public_key_file_btn, 4, 1)
         t2_layout.addWidget(self.t2_public_key_file_path_display, 4, 2, 1, 2)
         
-
         t2_layout.addWidget(self.t2_encrypted_file_label, 5, 0)
         t2_layout.addWidget(self.t2_encrypted_file_btn, 5, 1)
         t2_layout.addWidget(self.t2_encrypted_file_path_display, 5, 2, 1, 2)
@@ -403,9 +398,7 @@ class mainWindow(QWidget):
         self.t3_crc_algorithm_dropdown_label = QLabel("Algorithm :")
         self.t3_crc_algorithm_dropdown = QComboBox()
         self.t3_crc_algorithm_dropdown.addItems([
-            "CRC-32", "CRC-64", 
-            "ETC", "ETC", 
-            "ETC"
+            "CRC-24", "CRC-32", "CRC-64", "xmodem", "modbus", "kermit", "x-25", "posix"
         ])
 
         # CMAC verification file
@@ -430,9 +423,12 @@ class mainWindow(QWidget):
         self.t3_verify_btn.clicked.connect(self.t3_verify)
 
         # Random Number Generation
-        self.t3_random_label = QLabel("Random Numbers/Bytes:")
-        self.t3_random_number_btn = QPushButton("Generate Random Numbers")
-        self.t3_random_number_btn.clicked.connect(self.generate_random_numbers)
+        self.t3_number_of_bytes_label = QLabel("Number of Bytes:")
+        self.t3_number_of_bytes_dropdown = QComboBox()
+        self.t3_number_of_bytes_dropdown.addItems(["8", "16", "32", "64", "128", "256"])
+        self.t3_random_label = QLabel("Random Bytes/Numbers:")
+        self.t3_random_number_btn = QPushButton("Generate Random Bytes")
+        self.t3_random_number_btn.clicked.connect(self.generate_random_bytes)
         self.t3_random_output_display = QLineEdit()
         self.t3_random_output_display.setReadOnly(True)
 
@@ -462,6 +458,9 @@ class mainWindow(QWidget):
 
         t3_layout.addWidget(self.t3_crc_algorithm_dropdown_label, 4, 0)
         t3_layout.addWidget(self.t3_crc_algorithm_dropdown, 4, 1, 1, 3)
+
+        t3_layout.addWidget(self.t3_number_of_bytes_label, 4, 0)
+        t3_layout.addWidget(self.t3_number_of_bytes_dropdown, 4, 1, 1, 3)
 
         t3_layout.addWidget(self.t3_input_file_label, 5, 0)
         t3_layout.addWidget(self.t3_input_file_btn, 5, 1)
@@ -548,6 +547,7 @@ class mainWindow(QWidget):
         generate_long_sign_mode = "generate" in mode.lower() and "long" in mode.lower()
         verify_sign_mode = "verify" in mode.lower() and "long" not in mode.lower()
         verify_long_sign_mode = "verify" in mode.lower() and "long" in mode.lower()
+        rsa_key_selected = "RSA" in self.t1_key_type_dropdown.currentText()
 
         # Combined modes
         generate_mode = generate_sign_mode or generate_long_sign_mode
@@ -556,14 +556,14 @@ class mainWindow(QWidget):
         # Update visibility for each component
         # Key generation components
         self.t1_generate_key_btn.setVisible(key_generation_mode)
-        self.t1_Key_size_label.setVisible(key_generation_mode and self.t1_rsa_radio.isChecked())
-        self.t1_key_size_dropdown.setVisible(key_generation_mode and self.t1_rsa_radio.isChecked())
+        # self.t1_key_type_dropdown.setVisible(key_generation_mode or key_conversion_mode)
+        self.t1_Key_size_label.setVisible(key_generation_mode and rsa_key_selected)
+        self.t1_key_size_dropdown.setVisible(key_generation_mode and rsa_key_selected)
 
         # Key conversion components
         self.t1_algorithm_label.setVisible(not key_conversion_mode)
         self.t1_algorithm_dropdown.setVisible(not key_conversion_mode)
         self.t1_key_conversion_mode_label.setVisible(key_conversion_mode)
-        self.t1_key_type_dropdown.setVisible(key_conversion_mode)
         self.t1_pem_to_hex_radio.setVisible(key_conversion_mode)
         self.t1_hex_to_pem_radio.setVisible(key_conversion_mode)
         self.t1_pem_to_hex_label.setVisible(key_conversion_mode and self.t1_pem_to_hex_radio.isChecked())
@@ -627,6 +627,9 @@ class mainWindow(QWidget):
         self.t2_iv_file_path_display.setVisible((is_encryption_mode or is_decryption_mode) and not is_rsa_oaep_mode)
         
         self.t2_encrypt_btn.setVisible(is_encryption_mode)
+        self.t2_input_file_label.setVisible(not is_decryption_mode)
+        self.t2_input_file_btn.setVisible(not is_decryption_mode)
+        self.t2_input_file_path_display.setVisible(not is_decryption_mode)
         self.t2_decrypt_btn.setVisible(is_decryption_mode)
         self.t2_encrypted_file_label.setVisible(is_decryption_mode)
         self.t2_encrypted_file_btn.setVisible(is_decryption_mode)
@@ -642,8 +645,7 @@ class mainWindow(QWidget):
         self.t2_hash_file_path_display.setVisible(is_hash_mode and "verify" in mode.lower())
         self.t2_generate_hash_btn.setVisible(is_hash_mode and "generate" in mode.lower())
         self.t2_verify_hash_btn.setVisible(is_hash_mode and "verify" in mode.lower())
-        
-        
+
     def t3_update_mode(self):
         """Update the UI fields based on the selected mode."""
         mode = self.t3_mode_dropdown.currentText()
@@ -691,6 +693,8 @@ class mainWindow(QWidget):
         self.t3_crc_verification_path_display.setVisible(is_verification_mode and is_crc_mode)
 
         self.t3_random_label.setVisible(is_random_mode)
+        self.t3_number_of_bytes_label.setVisible(is_random_mode)
+        self.t3_number_of_bytes_dropdown.setVisible(is_random_mode)
         self.t3_random_number_btn.setVisible(is_random_mode)
         self.t3_random_output_display.setVisible(is_random_mode)
 
@@ -754,55 +758,6 @@ class mainWindow(QWidget):
             }
         """)
 
-    def update_algorithm_options(self, key_type):
-        """Update dropdown based on the mode and selected key type."""
-        current_mode = self.t1_mode_dropdown.currentText()
-        self.t1_algorithm_dropdown.clear()
-
-        if "Key" in current_mode:
-            if key_type == "RSA":
-                self.t1_algorithm_dropdown.addItems(["RSA-OAEP", "RSA-PSS"])
-            elif key_type == "ECDSA":
-                self.t1_algorithm_dropdown.addItems(["SECP192R1","SECP256R1","SECP384R1","SECP521R1","SECP256K1"])
-            else:
-                pass
-        else:
-            self.t1_algorithm_dropdown.addItems(["SHA-256", "SHA-384", "SHA-512"])
-
-    def t1_get_selected_key_type(self):
-        if self.t1_rsa_radio.isChecked():
-            return "RSA"
-        elif self.t1_ecdsa_radio.isChecked():
-            return "ECDSA"
-        elif self.t1_ed25519_radio.isChecked():
-            return "ED25519"
-        return "RSA"  # Default to RSA if none are checked
-
-    def t1_generate_key(self):
-        QMessageBox.information(self, "Key Generation", "Key generated successfully!")
-
-    def t1_load_pem_key(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
-        if file_path:
-            self.t1_pem_key_file_path_display.setText(file_path)
-
-    def t1_load_hex_key(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.hex);;All Files (*)')
-        if file_path:
-            self.t1_hex_key_file_path_display.setText(file_path)
-
-    def t1_convert_key(self):
-        if self.t1_pem_to_hex_radio.isChecked():
-            if not self.t1_pem_key_file_path_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a PEM key for conversion.")
-        elif self.t1_hex_to_pem_radio.isChecked():
-            if not self.t1_hex_key_file_path_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a hex key for conversion.")
-        else:
-            QMessageBox.warning(self, "Missing Input", "Please select the conversion mode and load appropriate key for conversion.")
-
-        # QMessageBox.information(self, "Key Conversion", "Key generated successfully!")
-
     def load_private_key(self, tab):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
         if file_path:
@@ -831,50 +786,7 @@ class mainWindow(QWidget):
             elif tab == "tab2":
                 self.t2_input_file_path_display.setText(file_path)
             elif tab == "tab3":
-                self.t3_input_path_file_display.setText(file_path) 
-
-    def t1_load_signature_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Signature File', '', 'All Files (*)')
-        if file_path:
-            self.t1_signature_file_path_display.setText(file_path)
-
-    def t1_generate_hasher(self):
-        self.t1_call_count += 1
-        QMessageBox.information(self, "Generate Hasher", "Hasher generated successfully!")
-        pass
-
-    def t1_update_hasher(self):
-        if self.t1_call_count == 0:
-            QMessageBox.warning(self, "No Hasher", "Please generate a hasher first.")
-        elif not self.t1_input_file_path_display.text() and not self.t1_hasher_file_path.text():
-            QMessageBox.warning(self, "Missing Input", "Please load an input file and the generated hasher file .")
-        else:
-            QMessageBox.information(self, "Update Hasher", "Hasher updated with given data successfully!")
-
-    def t1_load_hasher_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, 'Open hasher File', '', 'Hash Files (*.hash *.hsh *.txt *.dat *.bin);;All Files (*)')
-        if file_path:
-            self.t1_hasher_file_path.setText(file_path)
-
-    def t1_generate_signature(self):
-        if "long" in self.t1_mode_dropdown.currentText():
-            if not self.t1_private_key_file_path_display.text() or not self.t1_hasher_file_path.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a Private key and a hasher file for generating a signature.")
-                print(self.t1_call_count, "long sign mode")
-                self.t1_call_count = 0
-            else:
-                QMessageBox.information(self, "Signature Generation", "Signature generated successfully!")
-        else:
-            if not self.t1_private_key_file_path_display.text() or not self.t1_input_file_path_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a Private key and an input file for generating a signature.")
-            else:
-                QMessageBox.information(self, "Signature Generation", "Signature generated successfully!")
-
-    def t1_verify_signature(self):
-        if not self.t1_public_key_file_path_display.text() or not self.t1_input_file_path_display.text() or not self.t1_signature_file_path_display.text():
-            QMessageBox.warning(self, "Missing Input", "Please load the public key, an input file, and a signature file for generating a signature.")
-        else:
-            QMessageBox.information(self, "Signature Verification", "Signature verified successfully!")
+                self.t3_input_path_file_display.setText(file_path)
 
     def load_key_file(self, tab):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
@@ -883,20 +795,180 @@ class mainWindow(QWidget):
         else:
             self.t3_key_file_path_display.setText(file_path)
 
+    def t1_update_algorithm_options(self):
+        """Update dropdown based on the mode and selected key type."""
+        current_mode = self.t1_mode_dropdown.currentText()
+        key_type = self.t1_key_type_dropdown.currentText()
+        self.t1_algorithm_dropdown.clear()
+
+        if "Key" in current_mode:
+            if key_type == "RSA":
+                self.t1_algorithm_dropdown.addItems(["RSA-OAEP", "RSA-PSS"])
+            elif key_type == "ECDSA":
+                self.t1_algorithm_dropdown.addItems(["SECP192R1","SECP256R1","SECP384R1","SECP521R1","SECP256K1"])
+            elif key_type == "Symmetric key":
+                self.t1_algorithm_dropdown.addItems(["AES-128", "AES-192", "AES-256"])
+            else:
+                pass
+        else:
+            self.t1_algorithm_dropdown.addItems(["SHA256", "SHA384", "SHA512"])
+
+    def t1_load_pem_key(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
+        if file_path:
+            self.t1_pem_key_file_path_display.setText(file_path)
+
+    def t1_load_hex_key(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.hex);;All Files (*)')
+        if file_path:
+            self.t1_hex_key_file_path_display.setText(file_path)
+
+    def t1_load_hasher_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open hasher File', '', 'Hash Files (*.hash *.hsh *.txt *.dat *.bin);;All Files (*)')
+        if file_path:
+            self.t1_hasher_file_path.setText(file_path)
+
+    def t1_load_signature_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, 'Open Signature File', '', 'All Files (*)')
+        if file_path:
+            self.t1_signature_file_path_display.setText(file_path)
+
+    def t1_generate_key(self):
+        key_type = self.t1_key_type_dropdown.currentText()
+        if key_type == "RSA":
+            retList = interface.If_generateKey(key_type, self.t1_key_size_dropdown.currentText())
+        else:
+            retList = interface.If_generateKey(key_type, self.t1_algorithm_dropdown.currentText())
+        if retList[0] == "Success":
+            QMessageBox.information(self, "Key Generation", "Key generated successfully!")
+        else:
+            QMessageBox.information(self, "Key Generation", retList[1])
+
+    def t1_convert_key(self):
+        if self.t1_pem_to_hex_radio.isChecked():
+            if not self.t1_pem_key_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load a PEM key for conversion.")
+            else:
+                retList = interface.If_pem_to_hex(
+                    self.t1_key_type_dropdown.currentText(),
+                    self.t1_pem_key_file_path_display.text()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Key Conversion", "PEM to HEX conversion successful!")
+                else:
+                    QMessageBox.warning(self, "Key Conversion", retList[1])
+        elif self.t1_hex_to_pem_radio.isChecked():
+            if not self.t1_hex_key_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load a hex key for conversion.")
+            else:
+                retList = interface.If_hex_to_pem(
+                    self.t1_hex_key_file_path_display.text()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Key Conversion", "HEX to PEM conversion successful!")
+                else:
+                    QMessageBox.warning(self, "Key Conversion", retList[1])
+        else:
+            QMessageBox.warning(self, "Missing Input", "Please select the conversion mode and load appropriate key for conversion.")
+
+    def t1_generate_hasher(self):
+        key_type = self.t1_key_type_dropdown.currentText()
+        selected_hash = self.t1_algorithm_dropdown.currentText()
+        if key_type and selected_hash:
+            self.t1_call_count += 1
+            retList = interface.If_generateHasherLongMessage(key_type, selected_hash)
+            if retList[0] == "Success":
+                QMessageBox.information(self, "Generate Hasher", "Hasher generated successfully!")
+            else:
+                QMessageBox.warning(self, retList[0], retList[1])
+        else:
+            QMessageBox.information(self, "Generate Hasher", "Please select a valid key and Hash")
+
+    def t1_update_hasher(self):
+        if self.t1_call_count == 0:
+            QMessageBox.warning(self, "No Hasher", "Please generate a hasher first.")
+        elif not self.t1_input_file_path_display.text() and not self.t1_hasher_file_path.text():
+            QMessageBox.warning(self, "Missing Input", "Please load an input file and the generated hasher file .")
+        else:
+            key_type = self.t1_key_type_dropdown.currentText()
+            retList = interface.If_updateHasherLongMessage(key_type, self.t1_input_file_path_display.text(), self.t1_hasher_file_path.text())
+            if retList[0] == "Success":
+                QMessageBox.information(self, "Update Hasher", "Hasher updated with given data successfully!")
+            else:
+                QMessageBox.warning(self, retList[0], retList[1])
+
+    def t1_generate_signature(self):
+        if self.t1_key_type_dropdown.currentText() == "Symmetric key":
+            QMessageBox.warning(self, "Warning", "Cannot sign using a Symmetric key")
+        else:
+            if "long" in self.t1_mode_dropdown.currentText():
+                if self.t1_call_count < 1:
+                    QMessageBox.warning(self, "Warning", "Please generate a hasher first.")
+                elif not self.t1_private_key_file_path_display.text() or not self.t1_hasher_file_path.text():
+                    QMessageBox.warning(self, "Missing Input", "Please load a Private key and a hasher file for generating a signature.")
+                else:
+                    retList = interface.If_generateSignForLongMessage(
+                        self.t1_key_type_dropdown.currentText(),
+                        self.t1_private_key_file_path_display.text(),
+                        self.t1_hasher_file_path.text(),
+                        self.t1_algorithm_dropdown.currentText()
+                    )
+                    if retList[0] == "Success":
+                        self.t1_call_count = 0
+                        QMessageBox.information(self, "Signature Generation", "Signature generated successfully!")
+                    else:
+                        QMessageBox.information(self, "Signature Generation", retList[1])
+            else:
+                if not self.t1_private_key_file_path_display.text() or not self.t1_input_file_path_display.text():
+                    QMessageBox.warning(self, "Missing Input", "Please load a Private key and an input file for generating a signature.")
+                else:
+                    retList = interface.If_generateSign(
+                        self.t1_key_type_dropdown.currentText(),
+                        self.t1_private_key_file_path_display.text(),
+                        self.t1_input_file_path_display.text(),
+                        self.t1_algorithm_dropdown.currentText()
+                    )
+                    if retList[0] == "Success":
+                        QMessageBox.information(self, "Signature Generation", "Signature generated successfully!")
+                    else:
+                        QMessageBox.information(self, "Signature Generation", retList[1])
+
+    def t1_verify_signature(self):
+        if "long" in self.t1_algorithm_dropdown.currentText():
+            if not self.t1_public_key_file_path_display.text() or not self.t1_hasher_file_path.text() or not self.t1_signature_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load the public key, a hasher file, and a signature file for generating a signature.")
+            else:
+                retList = interface.If_VerifySignature_LongMessage(
+                    self.t1_key_type_dropdown.currentText(),
+                    self.t1_public_key_file_path_display.text(),
+                    self.t1_hasher_file_path.text(),
+                    self.t1_signature_file_path_display.text(),
+                    self.t1_algorithm_dropdown.currentText()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Signature Verification", "Signature verified successfully!")
+                else:
+                    QMessageBox.warning(self, "Signature Verification", retList[1])
+        else:
+            if not self.t1_public_key_file_path_display.text() or not self.t1_input_file_path_display.text() or not self.t1_signature_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load the public key, an input file, and a signature file for generating a signature.")
+            else:
+                retList = interface.If_verifySignature(
+                    self.t1_key_type_dropdown.currentText(),
+                    self.t1_public_key_file_path_display.text(),
+                    self.t1_input_file_path_display.text(),
+                    self.t1_signature_file_path_display.text(),
+                    self.t1_algorithm_dropdown.currentText()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Signature Verification", "Signature verified successfully!")
+                else:
+                    QMessageBox.warning(self, "Signature Verification", retList[1])
+
     def t2_load_iv_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Initialization Vector File', '', 'Initialization Vector Files (*.iv *.bin *.txt *.dat *.pem);;All Files (*)')
         if file_path:
             self.t2_iv_file_path_display.setText(file_path)
-
-    def t2_encrypt(self):
-        if self.t2_rsa_oaep_radio.isChecked():
-            if not self.t2_public_key_file_path_display.text() or not self.t2_input_file_path_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a RSA public key and an input file for encryption.")
-        else:   
-            if not self.t2_key_file_path_display.text() or not self.t2_input_file_path_display.text() or not self.t2_iv_file_path_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a key, an Initialization vector and an input file for encryption.")
-
-        QMessageBox.information(self, "Encryption", "File encrypted successfully!")
 
     def t2_load_encrypted_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Encrypted File', '', 'Encrypted Files (*.enc);;All Files (*)')
@@ -908,45 +980,101 @@ class mainWindow(QWidget):
         if file_path:
             self.t1_hasher_file_path.setText(file_path)
 
+    def t2_encrypt(self):
+        if self.t2_rsa_oaep_radio.isChecked():
+            if not self.t2_public_key_file_path_display.text() or not self.t2_input_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load a RSA public key and an input file for encryption.")
+            else:
+                retList = interface.If_rsa_encrypt(
+                    self.t2_public_key_file_path_display.text(),
+                    self.t2_input_file_path_display.text(),
+                    self.t2_algorithm_dropdown.currentText()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Encryption", "File encrypted successfully!")
+                else:
+                    QMessageBox.information(self, "Encryption", retList[1])
+        else:
+            if not self.t2_key_file_path_display.text() or not self.t2_input_file_path_display.text() or not self.t2_iv_file_path_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load a key, an Initialization vector and an input file for encryption.")
+            else:
+                aes_algo = ""
+                if self.t2_cbc_radio.isChecked():
+                    aes_algo = "CBC"
+                else:
+                    aes_algo = "CTR"
+                retList = interface.If_aes_encrypt(
+                    self.t2_key_file_path_display.text(),
+                    self.t2_input_file_path_display.text(),
+                    self.t2_iv_file_path_display.text(),
+                    aes_algo
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Encryption", "File encrypted successfully!")
+                else:
+                    QMessageBox.information(self, "Encryption", retList[1])
+
     def t2_decrypt(self):
         if self.t2_rsa_oaep_radio.isChecked():
-            if not self.t2_private_key_file_path_display.text() or not self.t2_input_file_path_display.text() or not self.t2_encrypted_file_path_display.text():
+            if not self.t2_private_key_file_path_display.text() or not self.t2_encrypted_file_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load a RSA private key, an input file and an encrypted file for decryption.")
+            else:
+                retList = interface.If_rsa_decrypt(
+                    self.t2_public_key_file_path_display.text(),
+                    self.t2_encrypted_file_path_display.text(),
+                    self.t2_algorithm_dropdown.currentText()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Decryption", "Decryption completed successfully!")
+                else:
+                    QMessageBox.information(self, "Decryption", retList[1])
         else:
             if not self.t2_key_file_path_display() or not self.t2_encrypted_file_path_display.text() or not self.t2_iv_file_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load a key, an Initialization vector and an encrypted file for decryption.")
-        
-        QMessageBox.information(self, "Decryption", "Decryption completed successfully!")
+            else:
+                aes_algo = ""
+                if self.t2_cbc_radio.isChecked():
+                    aes_algo = "CBC"
+                else:
+                    aes_algo = "CTR"
+
+                retList = interface.If_aes_decrypt(
+                    self.t2_key_file_path_display.text(),
+                    self.t2_iv_file_path_display.text(),
+                    self.t2_encrypted_file_path_display.text(),
+                    aes_algo
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "Decryption", "File encrypted successfully!")
+                else:
+                    QMessageBox.information(self, "Decryption", retList[1])
     
     def t2_generate_hash(self):
         if not self.t2_input_file_path_display.text():
             QMessageBox.warning(self, "Missing Input", "Please load an input file for generating a hash.")
         else:
-            QMessageBox.information(self, "Generate Hash", "Hash generated successfully!")
+            retList = interface.If_generate_hash(
+                self.t2_input_file_path_display.text(),
+                self.t2_algorithm_dropdown.currentText()
+            )
+            if retList[0] == "Success":
+                QMessageBox.information(self, "Generate Hash", "Hash generated successfully!")
+            else:
+                QMessageBox.information(self, "Generate Hash", retList[1])
 
     def t2_verify_hash(self):
         if not self.t2_input_file_path_display.text() and not self.t2_hash_file_path_display.text():
             QMessageBox.warning(self, "Missing Input", "Please load an input and a hash file for verifying the hash.")
         else:
-            QMessageBox.information(self, "Verify Hash", "Hash verified!")
-
-        QMessageBox.information(self, "Verify Hash", "Incorrect hash!")
-
-    def t3_generate_time_stamp(self):
-        timestamp = str(int(time.time()))
-        self.t3_time_stamp_display.setText(timestamp)
-
-    def t3_generate(self):
-        if "cmac" in self.t3_mode_dropdown.currentText().lower():
-            if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
+            retList = interface.If_verify_hash(
+                self.t2_input_file_path_display.text(),
+                self.t2_hash_file_path_display.text(),
+                self.t2_algorithm_dropdown.currentText()
+            )
+            if retList[0] == "Success":
+                QMessageBox.information(self, "Verify Hash", "Hash verified!")
             else:
-                QMessageBox.information(self, "CMAC Generation", "CMAC generated successfully!")
-        else:
-            if not self.t3_input_path_file_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load an Input file for generating CRC.")
-            else:
-                QMessageBox.information(self, "CRC Generation", "CRC generated successfully!")
+                QMessageBox.information(self, "Verify Hash", retList[1])
 
     def t3_load_verification_file(self, mode):
         if mode == "CMAC":
@@ -958,24 +1086,95 @@ class mainWindow(QWidget):
             if file_path:
                 self.t3_crc_verification_path_display.setText(file_path)
 
+    def t3_generate_time_stamp(self):
+        timestamp = str(int(time.time()))
+        self.t3_time_stamp_display.setText(timestamp)
+
+    def t3_generate(self):
+        if "cmac" in self.t3_mode_dropdown.currentText().lower():
+            if self.t3_without_time_stamp_radio.isChecked():
+                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text():
+                    QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
+                else:
+                    retList = interface.If_generate_CMAC(
+                        self.t3_key_file_path_display.text(),
+                        self.t3_input_path_file_display.text()
+                    )
+                    if retList[0] == "Success":
+                        QMessageBox.information(self, "CMAC Generation", "CMAC generated successfully!")
+                    else:
+                        QMessageBox.information(self, "CMAC Generation", retList[1])
+            else:
+                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_user_time_stamp_display.text():
+                    QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
+                else:
+                    retList = interface.If_generate_cmac_with_time_stamp(
+                        self.t3_key_file_path_display.text(),
+                        self.t3_input_path_file_display.text(),
+                        self.t3_user_time_stamp_display.text()
+                    )
+                    if retList[0] == "Success":
+                        QMessageBox.information(self, "CMAC Generation", "CMAC with timestamp generated successfully!")
+                    else:
+                        QMessageBox.information(self, "CMAC Generation", retList[1])
+        else:
+            if not self.t3_input_path_file_display.text():
+                QMessageBox.warning(self, "Missing Input", "Please load an Input file for generating CRC.")
+            else:
+                retList = interface.If_generate_crc(
+                    self.t2_input_file_path_display.text(),
+                    self.t2_algorithm_dropdown.currentText()
+                )
+                if retList[0] == "Success":
+                    QMessageBox.information(self, "CRC Generation", "CRC generated successfully!")
+                else:
+                    QMessageBox.information(self, "CRC Generation", retList[1])
+
     def t3_verify(self):
         if "cmac" in self.t3_mode_dropdown.currentText().lower():
-            if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_cmac_verification_path_display.text():
-                QMessageBox.warning(self, "Missing Input", "Please load a key, an Input file and a cmac file for verifying CMAC.")
+            if self.t3_without_time_stamp_radio.isChecked():
+                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_cmac_verification_path_display.text():
+                    QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file and a verification file for verifying CMAC.")
+                else:
+                    retList = interface.If_verify_cmac(
+                        self.t3_key_file_path_display.text(),
+                        self.t3_input_path_file_display.text(),
+                        self.t3_cmac_verification_path_display.text()
+                    )
+                    if retList[0] == "Success":
+                        QMessageBox.information(self, "CMAC Verification", "CMAC Verified successfully!")
+                    else:
+                        QMessageBox.information(self, "CMAC Verification", retList[1])
             else:
-                QMessageBox.information(self, "CMAC Verification", "CMAC verified successfully!")
+                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_user_time_stamp_display.text() and not self.t3_user_time_threshold_display.text():
+                    QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
+                else:
+                    retList = interface.If_verify_cmac_with_time_stamp(
+                        self.t3_key_file_path_display.text(),
+                        self.t3_input_path_file_display.text(),
+                        self.t3_cmac_verification_path_display.text(),
+                        self.t3_user_time_stamp_display.text(),
+                        self.t3_user_time_threshold_display.text()
+                    )
+                    if retList[0] == "Success":
+                        QMessageBox.information(self, "CMAC Verification", "CMAC with timestamp Verified successfully!")
+                    else:
+                        QMessageBox.information(self, "CMAC Verification", retList[1])
         else:
             if not self.t3_input_path_file_display.text() and not self.t3_crc_verification_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load an Input file and a crc file for verifying CRC.")
             else:
+                retList = interface.If_verify_crc(
+                    self.t3_input_path_file_display.text(),
+                    self.t3_crc_verification_path_display.text(),
+                    self.t2_algorithm_dropdown.currentText()
+                )
                 QMessageBox.information(self, "CRC Verification", "CRC verified successfully!")
 
-    def generate_random_numbers(self):
-        """Generate random numbers."""
-        random_number = 100
-        self.t3_random_output_display.setText(random_number)
-        
-    
+    def generate_random_bytes(self):
+        interface.If_generate_random_bytes(self.t3_number_of_bytes_dropdown.currentText())
+        QMessageBox(self, "Random Byte", "Random Bytes generated Successfully.")
+
 # Main execution
 if __name__ == '__main__':
     app = QApplication(sys.argv)
