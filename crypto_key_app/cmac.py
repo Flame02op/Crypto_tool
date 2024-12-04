@@ -41,12 +41,12 @@ def verify_cmac(key, message, expected_cmac):
         print(f"The following error occurred: {e}")
         return ("Error", str(e))
    
-def generate_cmac_with_timestamp(key, message):
+def generate_cmac_with_timestamp(key, message, timestamp):
     # Generate CMAC
     try:
         validate_key_length(key)
         validate_message(message)
-        timestamp = str(int(time.time())).encode('utf-8')
+        # timestamp = str(int(time.time())).encode('utf-8')
         # Appending the message with a timestamp to prevent replay-attacks
         message_with_timestamp = timestamp + message
         cmac_obj = cmac.CMAC(algorithms.AES(key))

@@ -72,14 +72,14 @@ def hex_to_pem(hex_key):
         # Attempt to load the key as a private key
         try:
             key = serialization.load_pem_private_key(key_bytes, password=None)
-            return ("Success", key, "private_key")
+            return ("Success", key)
         except (ValueError, TypeError):
             pass
         
         # Attempt to load the key as a public key
         try:
             key = serialization.load_pem_public_key(key_bytes)
-            return ("Success", key, "public_key")
+            return ("Success", key)
         except (ValueError, TypeError):
             pass
         
@@ -87,7 +87,7 @@ def hex_to_pem(hex_key):
         try:
             pem_key = base64.b64encode(key_bytes).decode('utf-8')
             pem_key = f"-----BEGIN AES KEY-----\n{pem_key}\n-----END AES KEY-----"
-            return ("Success", pem_key, "symmetric_key")
+            return ("Success", pem_key)
         except Exception as e:
             return ("Failure", "Invalid key data: unable to parse as a valid private, public, or symmetric key")
         

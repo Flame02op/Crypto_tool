@@ -26,6 +26,11 @@ def verify_crc(data, algorithm, calculated_crc):
 
 def check_for_algorithm(algorithm=''):
     for algo in crcmod.predefined._crc_definitions_by_name.values():
+        print(algo["name"])
         if algorithm == algo['name']:
             return True
     return False
+
+
+if __name__ == "__main__":
+    check_for_algorithm()

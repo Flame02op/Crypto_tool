@@ -12,7 +12,6 @@ secure_algorithms = {
     'sha3_512' : hashes.SHA3_512,
     'blake2b'  : hashes.BLAKE2b,
     'blake2s'  : hashes.BLAKE2s,
-    
 }
 
 # Deprecated due to collision attacks
