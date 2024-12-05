@@ -19,5 +19,5 @@ def gen_symmetric_key(algorithm):
 
     # Encode the random bytes in PEM format
     pem_key = base64.b64encode(random_bytes).decode('utf-8')
-    pem_key = f"-----BEGIN RANDOM KEY-----\n{pem_key}\n-----END RANDOM KEY-----"
-    return pem_key
+    pem_key = f"-----BEGIN AES KEY-----\n{pem_key}\n-----END AES KEY-----"
+    return ("Success", pem_key)

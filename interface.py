@@ -37,15 +37,15 @@ def If_generateKey(key_type, key_alg):
         retList = keys.generate_rsa_key_pair(key_alg)
     elif key_type == "ECDSA":
         retList = keys.generate_ecdsa_key_pair(key_alg)
-    elif key_type == "ED255119":
-        retList = keys.generate_ed25519_key_pair(key_alg)
+    elif key_type == "ED25519":
+        retList = keys.generate_ed25519_key_pair()
     else:
         retList = random_gen.gen_symmetric_key(key_alg)
 
     status = retList[0]
     createTempDir("./Temp/Keys")
     if status == "Success":
-        if key_type == "Symmetric":
+        if "Symmetric" in key_type:
             key = retList[1]
             createTempDir("./Temp/Keys")
             with open("./Temp/Keys/Symmetric_key.pem", "w") as fout:
