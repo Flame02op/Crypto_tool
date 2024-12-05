@@ -37,9 +37,9 @@ def generate_rsa_key_pair(key_size):
 
 def generate_ecdsa_key_pair(curve = 'secp256r1'):
     try:
-        if curve not in curves:
+        if curve.lower() not in curves:
             raise ValueError(f"The given algorithm is not supported : '{curve}'. Please select a valid algorithm secp128r1/secp256r1/secp256k1")
-        private_key = ec.generate_private_key(curves[curve]())
+        private_key = ec.generate_private_key(curves[curve.lower()]())
         public_key = private_key.public_key()
         return ("Success", private_key, public_key)
     except Exception as e:

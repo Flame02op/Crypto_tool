@@ -1,0 +1,10 @@
+# Ignore Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+crypto_key_app/__pycache__
+# Ignore virtual environment directories
+venv/
+# Ignore specific directories
+Temp/
+.vscode/
