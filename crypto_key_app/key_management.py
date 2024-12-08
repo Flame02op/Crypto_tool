@@ -2,6 +2,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
+import base64
 
 curves = {
     'secp192r1' : ec.SECP192R1,
@@ -11,16 +12,15 @@ curves = {
     'secp256k1' : ec.SECP256K1
 }
 
-keySize= {'256' : 1024, '512' : 2048}
+keySize= {'128' : 1024, '256' : 2048, '512' : 4096, '1024' : 8192}
  
 def generate_rsa_key_pair(key_size):
     try:
         if str(key_size) in keySize:
             key_size = keySize[str(key_size)]
         else:
-            print(key_size)
-            if int(key_size) < 256 :
-                raise ValueError("Keys with size less than 1024 bits or 256 bytes are generally considered to be unsecured.")
+            if int(key_size) < 128 :
+                raise ValueError("Keys with size less than 1024 bits or 128 bytes are generally considered to be unsecured.")
             else:
                 raise ValueError(f"Key with given size {key_size} Bytes is not supported")
 
@@ -32,7 +32,6 @@ def generate_rsa_key_pair(key_size):
         return ("Success", private_key, public_key)
     except Exception as e:
         return ("Error", str(e), "")
-
 
 
 def generate_ecdsa_key_pair(curve = 'secp256r1'):
@@ -116,31 +115,62 @@ def load_key(key_type, file_path):
     except Exception as e:
         return ("Error", str(e))
     
-def save_private_key(key_type, private_key):
-    if key_type == "RSA" or key_type == "ECDSA":
-        pem = private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        )
-    else:
-        pem = private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-        )
+def save_private_key(key_type, private_key, conversion = False):
+    try:
+        if key_type == "RSA" or key_type == "ECDSA":
+            # Serialize RSA or ECDSA keys to PEM format
+            pem = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+        elif conversion:
+            # For Ed25519 keys, handle the PEM conversion properly
+            pem_content = private_key.decode("utf-8")
+            pem_key = pem_content.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").strip()
+            pem_key = base64.b64decode(pem_key)
+            if len(pem_key) > 32:
+                ed25519_private_key = pem_key[-32:]  # get the 32-byte key
+            try:
+                private_key = ed25519.Ed25519PrivateKey.from_private_bytes(ed25519_private_key)
+                pem = private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                )
+            except AttributeError as e:
+                raise AttributeError("Error loading private key:", str(e))
+        else:
+            pem = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+        with open(f"./Temp/Keys/{key_type.lower()}_private_key.pem", 'wb') as key_file:
+            key_file.write(pem)
 
-    with open(f"./Temp/Keys/{key_type.lower()}_private_key.pem", 'wb') as key_file:
-        key_file.write(pem)
+    except Exception as e:
+        raise Exception("An error occurred:", str(e))
 
 def save_public_key(key_type, public_key):
+    try:
+        if isinstance(public_key, bytes) and key_type == "ED25519":
+            # Deserialize the public key from raw bytes
+            pem_content = public_key.decode("utf-8")
+            pem_key = pem_content.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").strip()
+            pem_key = base64.b64decode(pem_key)
+            if len(pem_key) > 32:
+                pem_key = pem_key[-32:]
+            public_key = ed25519.Ed25519PublicKey.from_public_bytes(pem_key)
 
-    pem = public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
+        pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
 
-    with open(f"./Temp/Keys/{key_type.lower()}_public_key.pem", 'wb') as key_file:
-        key_file.write(pem)
+        with open(f"./Temp/Keys/{key_type.lower()}_public_key.pem", 'wb') as key_file:
+            key_file.write(pem)
+    except Exception as e:
+        print("An error occurred", str(e))
 
 

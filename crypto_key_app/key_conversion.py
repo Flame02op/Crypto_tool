@@ -14,7 +14,8 @@ keyFormat = {
         "ECDSA": ec.EllipticCurvePublicKey,
         "ED25519": ed25519.Ed25519PublicKey
     },
-    "Symmetric" : bytes
+    "Symmetric key" : str or bytes
+
 }
 # To do : check if DER support is needed
 # PEM (Privacy-Enhanced Mail): This is a text-based encoding that wraps binary data in a base64 encoding and includes header and footer markers such as -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----.
@@ -39,7 +40,6 @@ def determine_key_format(key):
 def pem_to_hex(pem_key):
     try:
         key_format, key_type = determine_key_format(pem_key)
-
         if key_type == "private_key":
             pem_bytes = pem_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -53,10 +53,10 @@ def pem_to_hex(pem_key):
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
             )
             return ("Success", pem_bytes.hex())
-        elif key_type == "Symmetric":
+        elif key_type == "Symmetric key":
             pem_key = pem_key.replace("-----BEGIN AES KEY-----\n", "").replace("\n-----END AES KEY-----", "")
             hex_key = base64.b64decode(pem_key)
-            return ("Success", hex_key)
+            return ("Success", hex_key.hex())
         else:
             raise ValueError("Unsupported key type for conversion to hex")
         
@@ -64,32 +64,34 @@ def pem_to_hex(pem_key):
         return ("Error", str(e))
 
 # Convert a hexadecimal string to a PEM key object
-def hex_to_pem(hex_key):
+def hex_to_pem(key_type, hex_key):
     try:
         # Convert the hex string back to bytes
         key_bytes = bytes.fromhex(hex_key)
-        
-        # Attempt to load the key as a private key
-        try:
-            key = serialization.load_pem_private_key(key_bytes, password=None)
-            return ("Success", key)
-        except (ValueError, TypeError):
-            pass
-        
-        # Attempt to load the key as a public key
-        try:
-            key = serialization.load_pem_public_key(key_bytes)
-            return ("Success", key)
-        except (ValueError, TypeError):
-            pass
-        
-        # Attempt to load the key as a symmetric key (AES)
-        try:
-            pem_key = base64.b64encode(key_bytes).decode('utf-8')
-            pem_key = f"-----BEGIN AES KEY-----\n{pem_key}\n-----END AES KEY-----"
-            return ("Success", pem_key)
-        except Exception as e:
-            return ("Failure", "Invalid key data: unable to parse as a valid private, public, or symmetric key")
+        if key_type == "ED25519":
+            return ("Success", key_bytes)
+        else:
+            # Attempt to load the key as a private key
+            try:
+                key = serialization.load_pem_private_key(key_bytes, password=None)
+                return ("Success", key)
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+            # Attempt to load the key as a public key
+            try:
+                key = serialization.load_pem_public_key(key_bytes)
+                return ("Success", key)
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+            # Attempt to load the key as a symmetric key (AES)
+            try:
+                pem_key = base64.b64encode(key_bytes).decode('utf-8')
+                pem_key = f"-----BEGIN AES KEY-----\n{pem_key}\n-----END AES KEY-----"
+                return ("Success", pem_key)
+            except Exception as e:
+                return ("Failure", "Invalid key data: unable to parse as a valid private, public, or symmetric key")
         
     except ValueError:
         return ("Failure", "Invalid hexadecimal string: could not decode")
