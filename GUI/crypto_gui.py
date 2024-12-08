@@ -81,7 +81,7 @@ class mainWindow(QWidget):
         # Key Generation section
         self.t1_Key_size_label = QLabel("Key size:")
         self.t1_key_size_dropdown = QComboBox()
-        self.t1_key_size_dropdown.addItems(["256", "512", "1024"])
+        self.t1_key_size_dropdown.addItems(["128", "256", "512", "1024"])
 
         self.t1_generate_key_btn = QPushButton("Generate Key")
         self.t1_generate_key_btn.clicked.connect(self.t1_generate_key)
@@ -862,6 +862,7 @@ class mainWindow(QWidget):
                 QMessageBox.warning(self, "Missing Input", "Please load a hex key for conversion.")
             else:
                 retList = interface.If_hex_to_pem(
+                    self.t1_key_type_dropdown.currentText(),
                     self.t1_hex_key_file_path_display.text()
                 )
                 if retList[0] == "Success":

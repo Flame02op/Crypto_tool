@@ -58,7 +58,10 @@ def If_generateKey(key_type, key_alg):
                 keys.save_private_key(key_type,private_key)
                 keys.save_public_key(key_type, public_key)
             except Exception as e:
-                print(e)
+                with open ("./Temp/log_file.txt", "a") as log:
+                    log.write("\n*********** Key generation failed ***********\n")
+                    log.write(f"Error occurred : {str(e)}")
+                    log.write("\n*********************************************\n")
                 return("Error", "An exception occurred, check the log for further details")
             return("Success", f"Key pair of key type : {key_type} generated at Temp/Keys")
     else:
@@ -69,9 +72,10 @@ def If_generateKey(key_type, key_alg):
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
 def If_pem_to_hex(key_type, key_file):
-    if checkFilePath(key_file):
+    if not checkFilePath(key_file):
         return ("Warning", f"The file path {os.path.split(key_file)[1]} does not exist")
 
+    key_file_name = os.path.split(key_file)[1]
     if key_type in ["RSA", "ECDSA", "ED25519"]:
         retList = keys.load_key(key_type, key_file)
         if retList[0] == "Success":
@@ -83,19 +87,19 @@ def If_pem_to_hex(key_type, key_file):
                 log.write("\n*********************************************\n")
             return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     else:
-        if os.path.split(key_file)[1].lower().endswith(".pem"):
+        if key_file_name.endswith(".pem"):
             with open(key_file, "r") as fin:
                 pem_key = fin.read()
         else:
             with open(key_file, "rb") as fin:
                 pem_key = fin.read()
 
-    key_file_name = os.path.split(key_file)[1]
+    key_file_name,_ = os.path.splitext(key_file_name)
     retList = convert.pem_to_hex(pem_key)
     if retList[0] == "Success":
         hex_key = retList[1]
         createTempDir("./Temp/Keys")
-        with open(f"./Temp/Keys/{key_file_name}.hex", "wb") as fout:
+        with open(f"./Temp/Keys/{key_file_name}.hex", "w") as fout:
             fout.write(hex_key)
         return ("Success", "Conversion Successful")
     else:
@@ -105,21 +109,46 @@ def If_pem_to_hex(key_type, key_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_hex_to_pem(key_file):
-    if checkFilePath(key_file):
+def If_hex_to_pem(key_type, key_file):
+    if not checkFilePath(key_file):
         return ("Warning", f"The file path {os.path.split(key_file)[1]} does not exist")
 
-    with open(key_file, "rb") as fin:
-        hex_key = fin.read()
-    key_file_name = os.path.split(key_file)[1]
+    with open(key_file, "r") as fin:
+        hex_key = fin.read().strip()
 
-    retList = convert.hex_to_pem(hex_key)
+    key_file_name = os.path.splitext(os.path.split(key_file)[1])[0]
+    retList = convert.hex_to_pem(key_type, hex_key)
     if retList[0] == "Success":
         pem_key = retList[1]
         createTempDir("./Temp/Keys")
-        with open(f"./Temp/Keys/{key_file_name}.pem", "w") as fout:
-            fout.write(pem_key)
-        return ("Success", "Conversion Successful")
+        if key_type in ["RSA", "ECDSA", "ED25519"]:
+
+            if key_type == "ED25519":
+                try:
+                    keys.save_private_key(key_type, pem_key, True)
+                    return ("Success", "Conversion Successful")
+                except Exception as e:
+                    pass
+            else:
+                try:
+                    keys.save_private_key(key_type, pem_key)
+                    return ("Success", "Conversion Successful")
+                except Exception as e:
+                    pass
+
+            try:
+                keys.save_public_key(key_type, pem_key)
+                return ("Success", "Conversion Successful")
+            except Exception as e:
+                with open ("./Temp/log_file.txt", "a") as log:
+                    log.write("\n*********** Key conversion failed ***********\n")
+                    log.write(f"Error occurred : {retList[1]}")
+                    log.write("\n*********************************************\n")
+                return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
+        else:
+            with open(f"./Temp/Keys/{key_file_name}.pem", "w") as fout:
+                fout.write(pem_key)
+            return ("Success", "Conversion Successful")
     elif retList[0] == "Failure":
         return retList
     else:
@@ -131,7 +160,7 @@ def If_hex_to_pem(key_file):
 
 def If_generateSign(key_type, private_key_file, input_file, hash_algo):
     for file in [private_key_file, input_file]:
-        if checkFilePath(file):
+        if not checkFilePath(file):
             return ("Warning", f"The file path {os.path.split(file)[1]} does not exist")
     
     retList = keys.load_key(key_type, private_key_file)
