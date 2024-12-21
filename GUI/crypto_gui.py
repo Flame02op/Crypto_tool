@@ -74,7 +74,7 @@ class mainWindow(QWidget):
         self.t1_hex_to_pem_radio.toggled.connect(lambda : self.t1_update_mode(self.t1_mode_dropdown.currentText()))
         
         # Algorithm Dropdown
-        self.t1_algorithm_label = QLabel("Algorithm:")
+        self.t1_algorithm_label = QLabel("Hash function:")
         self.t1_algorithm_dropdown = QComboBox()
         self.t1_update_algorithm_options()  # Default for RSA
         
@@ -548,6 +548,7 @@ class mainWindow(QWidget):
         verify_sign_mode = "verify" in mode.lower() and "long" not in mode.lower()
         verify_long_sign_mode = "verify" in mode.lower() and "long" in mode.lower()
         rsa_key_selected = "RSA" in self.t1_key_type_dropdown.currentText()
+        sign_with_ed25519 = "ED25519" in self.t1_key_type_dropdown.currentText() and generate_sign_mode
 
         # Combined modes
         generate_mode = generate_sign_mode or generate_long_sign_mode
@@ -556,7 +557,6 @@ class mainWindow(QWidget):
         # Update visibility for each component
         # Key generation components
         self.t1_generate_key_btn.setVisible(key_generation_mode)
-        # self.t1_key_type_dropdown.setVisible(key_generation_mode or key_conversion_mode)
         self.t1_Key_size_label.setVisible(key_generation_mode and rsa_key_selected)
         self.t1_key_size_dropdown.setVisible(key_generation_mode and rsa_key_selected)
 
@@ -579,6 +579,8 @@ class mainWindow(QWidget):
         self.t1_private_key_file_path_display.setVisible(generate_mode)
         self.t1_generate_signature_btn.setVisible(generate_mode)
         self.t1_key_file_label.setVisible(generate_mode or verify_mode)
+        self.t1_algorithm_label.setVisible(not sign_with_ed25519)
+        self.t1_algorithm_dropdown.setVisible(not sign_with_ed25519)
         
         # Public key (verification modes)
         self.t1_public_key_file_btn.setVisible(verify_mode)
@@ -806,6 +808,8 @@ class mainWindow(QWidget):
                 self.t1_algorithm_dropdown.addItems(["RSA-OAEP", "RSA-PSS"])
             elif key_type == "ECDSA":
                 self.t1_algorithm_dropdown.addItems(["SECP192R1","SECP256R1","SECP384R1","SECP521R1","SECP256K1"])
+            elif key_type == "ED25519":
+                self.t1_algorithm_dropdown.addItem("Fixed hash function : SHA512")
             elif key_type == "Symmetric key":
                 self.t1_algorithm_dropdown.addItems(["AES-128", "AES-192", "AES-256"])
             else:
@@ -908,7 +912,7 @@ class mainWindow(QWidget):
                 elif not self.t1_private_key_file_path_display.text() or not self.t1_hasher_file_path.text():
                     QMessageBox.warning(self, "Missing Input", "Please load a Private key and a hasher file for generating a signature.")
                 else:
-                    retList = interface.If_generateSignForLongMessage(
+                    retList = interface.If_generate_signForLongMessage(
                         self.t1_key_type_dropdown.currentText(),
                         self.t1_private_key_file_path_display.text(),
                         self.t1_hasher_file_path.text(),
@@ -923,7 +927,7 @@ class mainWindow(QWidget):
                 if not self.t1_private_key_file_path_display.text() or not self.t1_input_file_path_display.text():
                     QMessageBox.warning(self, "Missing Input", "Please load a Private key and an input file for generating a signature.")
                 else:
-                    retList = interface.If_generateSign(
+                    retList = interface.If_generate_sign(
                         self.t1_key_type_dropdown.currentText(),
                         self.t1_private_key_file_path_display.text(),
                         self.t1_input_file_path_display.text(),
@@ -939,7 +943,7 @@ class mainWindow(QWidget):
             if not self.t1_public_key_file_path_display.text() or not self.t1_hasher_file_path.text() or not self.t1_signature_file_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load the public key, a hasher file, and a signature file for generating a signature.")
             else:
-                retList = interface.If_VerifySignature_LongMessage(
+                retList = interface.If_verify_signature_LongMessage(
                     self.t1_key_type_dropdown.currentText(),
                     self.t1_public_key_file_path_display.text(),
                     self.t1_hasher_file_path.text(),
@@ -954,7 +958,7 @@ class mainWindow(QWidget):
             if not self.t1_public_key_file_path_display.text() or not self.t1_input_file_path_display.text() or not self.t1_signature_file_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load the public key, an input file, and a signature file for generating a signature.")
             else:
-                retList = interface.If_verifySignature(
+                retList = interface.If_verify_signature(
                     self.t1_key_type_dropdown.currentText(),
                     self.t1_public_key_file_path_display.text(),
                     self.t1_input_file_path_display.text(),

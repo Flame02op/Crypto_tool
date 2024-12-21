@@ -24,7 +24,6 @@ def generate_cmac(key, message):
         cmac_obj.update(message)
         return ("Success", cmac_obj.finalize())
     except Exception as e:
-        print(f"The following error occurred: {e}")
         return ("Error", str(e))
 
 def verify_cmac(key, message, expected_cmac):
@@ -38,7 +37,6 @@ def verify_cmac(key, message, expected_cmac):
     except InvalidSignature:
         return ("Failure", "Verification failed")
     except Exception as e:
-        print(f"The following error occurred: {e}")
         return ("Error", str(e))
    
 def generate_cmac_with_timestamp(key, message, timestamp):
@@ -53,7 +51,6 @@ def generate_cmac_with_timestamp(key, message, timestamp):
         cmac_obj.update(message_with_timestamp)
         return ("Success", cmac_obj.finalize(), timestamp)
     except Exception as e:
-        print(f"The following error occurred : {e}")
         return ("Error", e, None)
 
 def verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_threshold=60):
@@ -64,7 +61,6 @@ def verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_thre
         current_time = time.time()
         message_time = int(timestamp.decode('utf-8'))
         if abs(current_time - message_time) > time_threshold:
-            print("Timestamp is not within the acceptable range!")
             return ("Failure", "Timestamp is not within the acceptable range!")
         # Prepend the timestamp to the message for verification
         # ensure that this is exact opposite of that in the generation
@@ -77,5 +73,4 @@ def verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_thre
     except InvalidSignature:
         return ("Failure", "Verification failed")
     except Exception as e:
-        print(f"The following error occurred: {e}")
         return ("Error", str(e))

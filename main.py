@@ -113,8 +113,10 @@ if __name__ == "__main__":
     # else:
     #     print(private_key)
     
-    status, private_key = keys.load_key("ED25519", "./Temp/Keys/ed25519_private_key.pem")
+    status, private_key, public_key = keys.generate_ed25519_key_pair()
+    message = b"This is a message to be signed"
+    status, ed_sign = ed25519_sign.generate_ed25519_signature(private_key, message)
     print(status)
-    status, public_key = keys.load_key("ED25519", "./Temp/Keys/ed25519_public_key.pem")
-    print(status)
-    keys.show_key_pair(private_key, public_key)
+    if status == "success":
+        print(ed_sign)
+

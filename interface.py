@@ -87,13 +87,21 @@ def If_pem_to_hex(key_type, key_file):
                 log.write("\n*********************************************\n")
             return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     else:
-        if key_file_name.endswith(".pem"):
-            with open(key_file, "r") as fin:
-                pem_key = fin.read()
-        else:
+        try:
+            retList = keys.load_symmetric_key(key_file)
+            if retList[0] == "Success":
+                pem_key = retList[1]
+        except (ValueError, AttributeError):
             with open(key_file, "rb") as fin:
                 pem_key = fin.read()
+        except Exception as e:
+            with open ("./Temp/log_file.txt", "a") as log:
+                log.write("\n*********** Key conversion failed ***********\n")
+                log.write(f"Error occurred : {str(e)}")
+                log.write("\n*********************************************\n")
+            return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
+    retList = []
     key_file_name,_ = os.path.splitext(key_file_name)
     retList = convert.pem_to_hex(pem_key)
     if retList[0] == "Success":
@@ -158,7 +166,7 @@ def If_hex_to_pem(key_type, key_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generateSign(key_type, private_key_file, input_file, hash_algo):
+def If_generate_sign(key_type, private_key_file, input_file, hash_algo):
     for file in [private_key_file, input_file]:
         if not checkFilePath(file):
             return ("Warning", f"The file path {os.path.split(file)[1]} does not exist")
@@ -167,21 +175,31 @@ def If_generateSign(key_type, private_key_file, input_file, hash_algo):
     status = retList[0]
     if status == "Success":
         key = retList[1]
-        with open(input_file) as fin:
-            message = fin.read()
-        input_file_name = os.path.split(input_file)[1]
-        createTempDir("./Temp/Sign")
+    elif status == "Failure":
+        return retList
+    else:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n******** signature generation failed ********\n")
+            log.write(f"Error occurred : {retList[1]}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-        if key_type == "RSA":
-            signature = rsa_sign.generate_rsa_signature(key, message, hash_algo)
-        elif key_type == "ECDSA":
-            signature = ecdsa_sign.generate_ecdsa_signature(key, message, hash_algo)
-        else:
-            signature = ed25519_sign.generate_ed25519_signature(key, message, hash_algo)
+    retList = []
+    with open(input_file, "rb") as fin:
+        message = fin.read()
+    input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
+    createTempDir("./Temp/Sign")
+    if key_type == "RSA":
+        retList = rsa_sign.generate_rsa_signature(key, message, hash_algo)
+    elif key_type == "ECDSA":
+        retList = ecdsa_sign.generate_ecdsa_signature(key, message, hash_algo)
+    else:
+        retList = ed25519_sign.generate_ed25519_signature(key, message)
 
+    if retList[0] == "Success":
+        signature = retList[1]
         with open(f"./Temp/Sign/{input_file_name}.Signed", "wb") as sign_file:
             sign_file.write(signature)
-        
         return ("Success", "Signature generated")
     elif status == "Failure":
         failure_msg = retList[1]
@@ -192,17 +210,16 @@ def If_generateSign(key_type, private_key_file, input_file, hash_algo):
             log.write(f"Error occurred : {retList[1]}")
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
-    
 
 def If_generateHasherLongMessage(key_type, hash_algo):
     global longMessage_callOut
     createTempDir("./Temp/Sign")
     if key_type == "RSA":
-        retList = rsa_sign.generate_hash_longMessage(hash_algo, "./Temp/Sign/rsa_asher.hash")
+        retList = rsa_sign.generate_hash_longMessage(hash_algo, "./Temp/Sign/rsa_hasher.hash")
     elif key_type == "ECDSA":
         retList = ecdsa_sign.generate_hash_longMessage(hash_algo, "./Temp/Sign/ecdsa_hasher.hash")
     else:
-        return ("Warning", f"The key type {key_type} does not supports signing for long messages")
+        return ("Warning", f"{key_type} does not supports signing for long messages")
     status = retList[0]
     if status == "Success":
         longMessage_callOut +=1
@@ -251,7 +268,7 @@ def If_updateHasherLongMessage(key_type, input_file, hasher_file):
     else:
         return ("Warning", "Generate Hasher for long message first")
 
-def If_generateSignForLongMessage(key_type, private_key_file, hasher_file, hash_algo):   
+def If_generate_signForLongMessage(key_type, private_key_file, hasher_file, hash_algo):
     if longMessage_callOut != 0:
         for file in [private_key_file,hasher_file]:
             if not checkFilePath(file):
@@ -301,11 +318,10 @@ def If_generateSignForLongMessage(key_type, private_key_file, hasher_file, hash_
                 log.write(f"Error occurred : {retList[1]}")
                 log.write("\n*********************************************\n")
             return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
-
     else:
         return ("Warning", "Generate Hasher for long message first")
 
-def If_verifySignature(key_type, public_Key_file, input_file, signature_file, hash_algo):
+def If_verify_signature(key_type, public_Key_file, input_file, signature_file, hash_algo):
 
     for file in [input_file, public_Key_file, signature_file]:
         if not checkFilePath(file):
@@ -334,9 +350,9 @@ def If_verifySignature(key_type, public_Key_file, input_file, signature_file, ha
     elif key_type == "ECDSA":
         retList = ecdsa_sign.verify_ecdsa_signature(key, message, signature, hash_algo)
     else:
-        retList = ed25519_sign.verify_ed25519_signature(key, message, signature, hash_algo)
+        retList = ed25519_sign.verify_ed25519_signature(key, message, signature)
 
-    if retList[0] == "Success":
+    if retList[0] == "Success" or retList[0] == "Failure":
         return retList
     else:
         with open ("./Temp/log_file.txt", "a") as log:
@@ -345,7 +361,7 @@ def If_verifySignature(key_type, public_Key_file, input_file, signature_file, ha
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_VerifySignature_LongMessage(key_type, public_Key_file, hasher_file, signature_file, hash_algo):
+def If_verify_signature_LongMessage(key_type, public_Key_file, hasher_file, signature_file, hash_algo):
     for file in [public_Key_file, hasher_file, signature_file]:
         if not checkFilePath(file):
             return("Warning",  f"The file path {file} does not exist")
@@ -399,19 +415,26 @@ def If_aes_encrypt(key_file, input_file, iv_file, aes_algo):
         if not checkFilePath(file):
             return("Warning", f"The file path {os.path.split(file)[1]} does not exist")
 
-    if os.path.split(key_file)[1].lower().endswith(".pem"):    
-        with open(key_file, "r") as fin:
-            key = fin.read()
-    else:
+    try:
+        retList = keys.load_symmetric_key(key_file)
+        if retList[0] == "Success":
+            key = retList[1]
+    except (ValueError, AttributeError):
         with open(key_file, "rb") as fin:
             key = fin.read()
+    except Exception as e:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n************ Encryption failed **************\n")
+            log.write(f"Error occurred : {str(e)}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
     with open(input_file, "r") as fin:
         plain_text = fin.read()
 
     with open(iv_file, "rb") as fin:
         iv = fin.read()
-
+    retList = []
     retList = encrypt_decrypt.aes_encrypt(key, iv, plain_text, aes_algo)
     if retList[0] == "Success":
         encrypted_data = retList[1]
@@ -468,19 +491,26 @@ def If_aes_decrypt(key_file, iv_file, encrypted_file, aes_algo):
         if not checkFilePath(file):
             return("Warning", f"The file path {os.path.split(file)[1]} does not exist")
 
-    if os.path.split(key_file)[1].lower().endswith(".pem"):    
-        with open(key_file, "r") as fin:
-            key = fin.read()
-    else:
+    try:
+        retList = keys.load_symmetric_key(key_file)
+        if retList[0] == "Success":
+            key = retList[1]
+    except (ValueError, AttributeError):
         with open(key_file, "rb") as fin:
             key = fin.read()
+    except Exception as e:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n************ Decryption Failed **************\n")
+            log.write(f"Error occurred : {str(e)}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
     with open(encrypted_file, "rb") as fin:
         cipher_text = fin.read()
 
     with open(iv_file, "rb") as fin:
         iv = fin.read()
-
+    retList = []
     retList = encrypt_decrypt.aes_decrypt(key, iv, cipher_text, aes_algo)
     if retList[0] == "Success":
         plain_text = retList[1]
@@ -587,13 +617,20 @@ def If_generate_CMAC(key_file, input_file):
         message = fin.read()
     input_file_name = os.path.split(input_file)[1]
 
-    if os.path.split(key_file)[1].lower().endswith(".pem"):    
-        with open(key_file, "r") as fin:
-            key = fin.read()
-    else:
+    try:
+        retList = keys.load_symmetric_key(key_file)
+        if retList[0] == "Success":
+            key = retList[1]
+    except (ValueError, AttributeError):
         with open(key_file, "rb") as fin:
             key = fin.read()
-
+    except Exception as e:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n************ CMAC generation failed *********\n")
+            log.write(f"Error occurred : {str(e)}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
+    retList = []
     retList = cmac.generate_cmac(key, message)
     if retList[0] == "Success":
         gen_cmac = retList[1]
@@ -616,16 +653,23 @@ def If_verify_cmac(key_file, input_file, cmac_file):
     with open(input_file, "rb") as fin:
         message = fin.read()
 
-    if os.path.split(key_file)[1].lower().endswith(".pem"):    
-        with open(key_file, "r") as fin:
-            key = fin.read()
-    else:
+    try:
+        retList = keys.load_symmetric_key(key_file)
+        if retList[0] == "Success":
+            key = retList[1]
+    except (ValueError, AttributeError):
         with open(key_file, "rb") as fin:
             key = fin.read()
+    except Exception as e:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n********** CMAC verification failed ********\n")
+            log.write(f"Error occurred : {str(e)}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
     with open(cmac_file, "rb") as fin:
         expected_cmac = fin.read()
-
+    retList = []
     retList = cmac.verify_cmac(key, message, expected_cmac)
     if retList[0] == "Success" or retList[0] == "Failure":
         return retList
@@ -644,13 +688,20 @@ def If_generate_cmac_with_time_stamp( key_file, input_file, timestamp):
         message = fin.read()
     input_file_name = os.path.split(input_file)[1]
 
-    if os.path.split(key_file)[1].lower().endswith(".pem"):    
-        with open(key_file, "r") as fin:
-            key = fin.read()
-    else:
+    try:
+        retList = keys.load_symmetric_key(key_file)
+        if retList[0] == "Success":
+            key = retList[1]
+    except (ValueError, AttributeError):
         with open(key_file, "rb") as fin:
             key = fin.read()
-
+    except Exception as e:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n************ CMAC generation failed *********\n")
+            log.write(f"Error occurred : {str(e)}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
+    retList = []
     retList = cmac.generate_cmac_with_timestamp(key, message, timestamp)
     if retList[0] == "Success":
         gen_cmac = retList[1]
@@ -673,16 +724,23 @@ def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, t
     with open(input_file, "rb") as fin:
         message = fin.read()
 
-    if os.path.split(key_file)[1].lower().endswith(".pem"):    
-        with open(key_file, "r") as fin:
-            key = fin.read()
-    else:
+    try:
+        retList = keys.load_symmetric_key(key_file)
+        if retList[0] == "Success":
+            key = retList[1]
+    except (ValueError, AttributeError):
         with open(key_file, "rb") as fin:
             key = fin.read()
+    except Exception as e:
+        with open ("./Temp/log_file.txt", "a") as log:
+            log.write("\n********** CMAC verification failed *********\n")
+            log.write(f"Error occurred : {str(e)}")
+            log.write("\n*********************************************\n")
+        return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
     with open(cmac_file, "rb") as fin:
         expected_cmac = fin.read()
-
+    retList = []
     retList = cmac.verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_threshold)
     if retList[0] == "Success" or retList[0] == "Failure":
         return retList

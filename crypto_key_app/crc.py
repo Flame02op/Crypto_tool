@@ -9,7 +9,6 @@ def calculate_crc(data, algorithm='crc-32'):
             crc_func = crcmod.predefined.mkPredefinedCrcFun(algorithm)
             return ("Success", crc_func(data))
         except Exception as e:
-            print(f"Error calculating CRC: {e}") 
             return ("Error", str(e))
     else:
         return ("Failure", f"Invalid algorithm name '{algorithm}'. Use a valid CRC algorithm name like 'crc-32', 'crc-16', etc.")

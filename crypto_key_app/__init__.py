@@ -30,3 +30,28 @@
 
 # RSA-PKCS#1 v1.5: This is the original RSA signature scheme defined in PKCS#1 v1.5.
 # It uses a specific padding scheme for the message before signing.
+
+
+
+
+# Testing:
+
+# TAB 1
+# Key generation for all types (Done)
+# key conversions for all types (Done)
+# signature generation and verification for all types (Done)
+# generate and update hash for all types (Done)
+# signature for long messages for all types (Done)
+
+# TAB2
+# Encryption and decryption for all types
+# generate and verify hash for all types
+
+# TAB3
+# CMAC generation and verification
+# CRC generation and verification
+# Random bytes generation
+
+# TAB4
+# Update description
+# Update user manual

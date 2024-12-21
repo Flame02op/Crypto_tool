@@ -13,6 +13,15 @@ curves = {
 }
 
 keySize= {'128' : 1024, '256' : 2048, '512' : 4096, '1024' : 8192}
+
+def validate_key(key_type, key):
+    if key_type == 'RSA' and not isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):
+        return ("Failure", "Loaded key is not of type RSA.")
+    elif key_type == 'ECDSA' and not isinstance(key, (ec.EllipticCurvePrivateKey, ec.EllipticCurvePublicKey)):
+        return ("Failure", "Loaded key is not of type ECDSA.")
+    elif key_type == 'ED25519' and not isinstance(key, (ed25519.Ed25519PrivateKey, ed25519.Ed25519PublicKey)):
+        return ("Failure", "Loaded key is not of type ED25519.")
+    return ("Success", "Key validated")
  
 def generate_rsa_key_pair(key_size):
     try:
@@ -103,18 +112,32 @@ def load_key(key_type, file_path):
                 except ValueError:
                     key = serialization.load_der_public_key(key_data)
 
-        # Validate that the loaded key matches the expected type
-        if key_type == 'RSA' and not isinstance(key, (rsa.RSAPrivateKey, rsa.RSAPublicKey)):
-            return ("Failure", "Loaded key is not of type RSA.")
-        elif key_type == 'ECDSA' and not isinstance(key, (ec.EllipticCurvePrivateKey, ec.EllipticCurvePublicKey)):
-            return ("Failure", "Loaded key is not of type ECDSA.")
-        elif key_type == 'ED25519' and not isinstance(key, (ed25519.Ed25519PrivateKey, ed25519.Ed25519PublicKey)):
-            return ("Failure", "Loaded key is not of type ED25519.")
-        return ("Success", key)
+        retVal = validate_key(key_type, key)
+        if retVal[0] == "Success":
+            return ("Success", key)
+        else:
+            return retVal
 
     except Exception as e:
         return ("Error", str(e))
     
+def load_symmetric_key(file_path):
+    try:
+        with open(file_path, 'r') as key_file:
+            lines = key_file.readlines()
+
+        # Ensure the PEM headers are present
+        if not ((lines[0].strip() == "-----BEGIN SYMMETRIC KEY-----" and
+                lines[-1].strip() == "-----END SYMMETRIC KEY-----"))or ((lines[0].strip() == "-----BEGIN AES KEY-----" and
+                lines[-1].strip() == "-----END AES KEY-----")):
+            raise ValueError("Invalid PEM format: Missing BEGIN/END KEY headers.")
+        key = ''.join(lines[1:-1]).strip()
+        key = base64.b64decode(key)
+        return ("Success", key)
+    except Exception as e:
+        print("Failed to load symmetric key:", str(e))
+        return None
+
 def save_private_key(key_type, private_key, conversion = False):
     try:
         if key_type == "RSA" or key_type == "ECDSA":
