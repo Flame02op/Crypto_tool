@@ -40,7 +40,6 @@ def verify_cmac(key, message, expected_cmac):
         return ("Error", str(e))
    
 def generate_cmac_with_timestamp(key, message, timestamp):
-    # Generate CMAC
     try:
         validate_key_length(key)
         validate_message(message)
@@ -49,7 +48,7 @@ def generate_cmac_with_timestamp(key, message, timestamp):
         message_with_timestamp = timestamp + message
         cmac_obj = cmac.CMAC(algorithms.AES(key))
         cmac_obj.update(message_with_timestamp)
-        return ("Success", cmac_obj.finalize(), timestamp)
+        return ("Success", cmac_obj.finalize())
     except Exception as e:
         return ("Error", e, None)
 
@@ -59,13 +58,13 @@ def verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_thre
         validate_message(message)
         # Verify that the timestamp is within the acceptable threshold
         current_time = time.time()
-        message_time = int(timestamp.decode('utf-8'))
+        message_time = int(timestamp)
         if abs(current_time - message_time) > time_threshold:
             return ("Failure", "Timestamp is not within the acceptable range!")
         # Prepend the timestamp to the message for verification
         # ensure that this is exact opposite of that in the generation
         # if the timestamp is appended in the generation, then it should be prepended here
-        message_with_timestamp =  timestamp + message
+        message_with_timestamp = timestamp.encode('utf-8') + message
         cmac_obj = cmac.CMAC(algorithms.AES(key), backend=default_backend())
         cmac_obj.update(message_with_timestamp)
         cmac_obj.verify(expected_cmac)

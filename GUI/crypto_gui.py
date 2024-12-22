@@ -305,41 +305,41 @@ class mainWindow(QWidget):
         t2_layout.addWidget(self.t2_mode_label, 0, 0)
         t2_layout.addWidget(self.t2_mode_dropdown, 0, 1, 1, 3)
 
-        t2_layout.addWidget(self.t2_algorithm_label, 1, 0)
-        t2_layout.addWidget(self.t2_algorithm_dropdown, 1, 1, 1, 3)
         t2_layout.addWidget(self.t2_encryption_mode_label, 1, 0)
         t2_layout.addWidget(self.t2_cbc_radio, 1, 1)
         t2_layout.addWidget(self.t2_ctr_radio, 1, 2)
         t2_layout.addWidget(self.t2_rsa_oaep_radio, 1, 3)
+        t2_layout.addWidget(self.t2_algorithm_label, 2, 0)
+        t2_layout.addWidget(self.t2_algorithm_dropdown, 2, 1, 1, 3)
 
-        t2_layout.addWidget(self.t2_input_file_label, 2, 0)
-        t2_layout.addWidget(self.t2_input_file_btn, 2, 1)
-        t2_layout.addWidget(self.t2_input_file_path_display, 2, 2, 1, 2)
+        t2_layout.addWidget(self.t2_input_file_label, 3, 0)
+        t2_layout.addWidget(self.t2_input_file_btn, 3, 1)
+        t2_layout.addWidget(self.t2_input_file_path_display, 3, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_iv_file_label, 3, 0)
-        t2_layout.addWidget(self.t2_iv_file_btn, 3, 1)
-        t2_layout.addWidget(self.t2_iv_file_path_display, 3, 2, 1, 2)
+        t2_layout.addWidget(self.t2_iv_file_label, 4, 0)
+        t2_layout.addWidget(self.t2_iv_file_btn, 4, 1)
+        t2_layout.addWidget(self.t2_iv_file_path_display, 4, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_key_file_label, 4, 0)
-        t2_layout.addWidget(self.t2_key_file_btn, 4, 1)
-        t2_layout.addWidget(self.t2_key_file_path_display, 4, 2, 1, 2)
-        t2_layout.addWidget(self.t2_private_key_file_btn, 4, 1)
-        t2_layout.addWidget(self.t2_private_key_file_path_display, 4, 2, 1, 2)
-        t2_layout.addWidget(self.t2_public_key_file_btn, 4, 1)
-        t2_layout.addWidget(self.t2_public_key_file_path_display, 4, 2, 1, 2)
+        t2_layout.addWidget(self.t2_key_file_label, 5, 0)
+        t2_layout.addWidget(self.t2_key_file_btn, 5, 1)
+        t2_layout.addWidget(self.t2_key_file_path_display, 5, 2, 1, 2)
+        t2_layout.addWidget(self.t2_private_key_file_btn, 5, 1)
+        t2_layout.addWidget(self.t2_private_key_file_path_display, 5, 2, 1, 2)
+        t2_layout.addWidget(self.t2_public_key_file_btn, 5, 1)
+        t2_layout.addWidget(self.t2_public_key_file_path_display, 5, 2, 1, 2)
         
-        t2_layout.addWidget(self.t2_encrypted_file_label, 5, 0)
-        t2_layout.addWidget(self.t2_encrypted_file_btn, 5, 1)
-        t2_layout.addWidget(self.t2_encrypted_file_path_display, 5, 2, 1, 2)
+        t2_layout.addWidget(self.t2_encrypted_file_label, 6, 0)
+        t2_layout.addWidget(self.t2_encrypted_file_btn, 6, 1)
+        t2_layout.addWidget(self.t2_encrypted_file_path_display, 6, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_hash_file_label, 5, 0)
-        t2_layout.addWidget(self.t2_hash_file_btn, 5, 1)
-        t2_layout.addWidget(self.t2_hash_file_path_display, 5, 2, 1, 2)
+        t2_layout.addWidget(self.t2_hash_file_label, 6, 0)
+        t2_layout.addWidget(self.t2_hash_file_btn, 6, 1)
+        t2_layout.addWidget(self.t2_hash_file_path_display, 6, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_encrypt_btn, 6, 0, 1, 4)
-        t2_layout.addWidget(self.t2_decrypt_btn, 6, 0, 1, 4)
-        t2_layout.addWidget(self.t2_generate_hash_btn, 7, 0, 1, 4)
-        t2_layout.addWidget(self.t2_verify_hash_btn, 7, 0, 1, 4)
+        t2_layout.addWidget(self.t2_encrypt_btn, 7, 0, 1, 4)
+        t2_layout.addWidget(self.t2_decrypt_btn, 7, 0, 1, 4)
+        t2_layout.addWidget(self.t2_generate_hash_btn, 8, 0, 1, 4)
+        t2_layout.addWidget(self.t2_verify_hash_btn, 8, 0, 1, 4)
 
         self.tab2.setLayout(t2_layout)
         # Apply Styles
@@ -426,11 +426,8 @@ class mainWindow(QWidget):
         self.t3_number_of_bytes_label = QLabel("Number of Bytes:")
         self.t3_number_of_bytes_dropdown = QComboBox()
         self.t3_number_of_bytes_dropdown.addItems(["8", "16", "32", "64", "128", "256"])
-        self.t3_random_label = QLabel("Random Bytes/Numbers:")
         self.t3_random_number_btn = QPushButton("Generate Random Bytes")
         self.t3_random_number_btn.clicked.connect(self.generate_random_bytes)
-        self.t3_random_output_display = QLineEdit()
-        self.t3_random_output_display.setReadOnly(True)
 
         # Layout Setup
         t3_layout = QGridLayout()
@@ -477,9 +474,8 @@ class mainWindow(QWidget):
         t3_layout.addWidget(self.t3_generate_btn, 7, 0, 1, 4)
         t3_layout.addWidget(self.t3_verify_btn, 7, 0, 1, 4)
 
-        t3_layout.addWidget(self.t3_random_label, 8, 0)
-        t3_layout.addWidget(self.t3_random_number_btn, 8, 1)
-        t3_layout.addWidget(self.t3_random_output_display, 8, 2, 1, 2)
+        t3_layout.addWidget(self.t3_random_number_btn, 8, 0, 1, 4)
+
 
         self.tab3.setLayout(t3_layout)
         # Apply Styles
@@ -639,9 +635,9 @@ class mainWindow(QWidget):
         
         self.t2_cbc_radio.setVisible(not is_hash_mode)
         self.t2_ctr_radio.setVisible(not is_hash_mode)
+        self.t2_algorithm_label.setVisible(is_hash_mode or is_rsa_oaep_mode)
+        self.t2_algorithm_dropdown.setVisible(is_hash_mode or is_rsa_oaep_mode)
         self.t2_rsa_oaep_radio.setVisible(not is_hash_mode)
-        self.t2_algorithm_label.setVisible(is_hash_mode)
-        self.t2_algorithm_dropdown.setVisible(is_hash_mode)
         self.t2_hash_file_label.setVisible(is_hash_mode and "verify" in mode.lower())
         self.t2_hash_file_btn.setVisible(is_hash_mode and "verify" in mode.lower())
         self.t2_hash_file_path_display.setVisible(is_hash_mode and "verify" in mode.lower())
@@ -676,9 +672,9 @@ class mainWindow(QWidget):
         self.t3_crc_algorithm_dropdown_label.setVisible(is_crc_mode)
         self.t3_crc_algorithm_dropdown.setVisible(is_crc_mode)
 
-        self.t3_key_file_label.setVisible(is_generate_mode and is_cmac_mode)
-        self.t3_key_file_btn.setVisible(is_generate_mode and is_cmac_mode)
-        self.t3_key_file_path_display.setVisible(is_generate_mode and is_cmac_mode)
+        self.t3_key_file_label.setVisible(is_cmac_mode)
+        self.t3_key_file_btn.setVisible(is_cmac_mode)
+        self.t3_key_file_path_display.setVisible(is_cmac_mode)
 
         self.t3_generate_btn.setVisible(is_generate_mode)
         self.t3_verify_btn.setVisible(is_verification_mode)
@@ -694,11 +690,10 @@ class mainWindow(QWidget):
         self.t3_crc_verification_file_btn.setVisible(is_verification_mode and is_crc_mode)
         self.t3_crc_verification_path_display.setVisible(is_verification_mode and is_crc_mode)
 
-        self.t3_random_label.setVisible(is_random_mode)
         self.t3_number_of_bytes_label.setVisible(is_random_mode)
         self.t3_number_of_bytes_dropdown.setVisible(is_random_mode)
         self.t3_random_number_btn.setVisible(is_random_mode)
-        self.t3_random_output_display.setVisible(is_random_mode)
+
 
     def apply_styles(self):
         """Apply styles for a more polished UI."""
@@ -892,7 +887,7 @@ class mainWindow(QWidget):
     def t1_update_hasher(self):
         if self.t1_call_count == 0:
             QMessageBox.warning(self, "No Hasher", "Please generate a hasher first.")
-        elif not self.t1_input_file_path_display.text() and not self.t1_hasher_file_path.text():
+        elif not self.t1_input_file_path_display.text() or not self.t1_hasher_file_path.text():
             QMessageBox.warning(self, "Missing Input", "Please load an input file and the generated hasher file .")
         else:
             key_type = self.t1_key_type_dropdown.currentText()
@@ -983,7 +978,7 @@ class mainWindow(QWidget):
     def t2_load_hash_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open hash File', '', 'Hash Files (*.hash *.hsh *.txt *.dat *.bin);;All Files (*)')
         if file_path:
-            self.t1_hasher_file_path.setText(file_path)
+            self.t2_hash_file_path_display.setText(file_path)
 
     def t2_encrypt(self):
         if self.t2_rsa_oaep_radio.isChecked():
@@ -1025,7 +1020,7 @@ class mainWindow(QWidget):
                 QMessageBox.warning(self, "Missing Input", "Please load a RSA private key, an input file and an encrypted file for decryption.")
             else:
                 retList = interface.If_rsa_decrypt(
-                    self.t2_public_key_file_path_display.text(),
+                    self.t2_private_key_file_path_display.text(),
                     self.t2_encrypted_file_path_display.text(),
                     self.t2_algorithm_dropdown.currentText()
                 )
@@ -1034,7 +1029,7 @@ class mainWindow(QWidget):
                 else:
                     QMessageBox.information(self, "Decryption", retList[1])
         else:
-            if not self.t2_key_file_path_display() or not self.t2_encrypted_file_path_display.text() or not self.t2_iv_file_path_display.text():
+            if not self.t2_key_file_path_display.text() or not self.t2_encrypted_file_path_display.text() or not self.t2_iv_file_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load a key, an Initialization vector and an encrypted file for decryption.")
             else:
                 aes_algo = ""
@@ -1068,7 +1063,7 @@ class mainWindow(QWidget):
                 QMessageBox.information(self, "Generate Hash", retList[1])
 
     def t2_verify_hash(self):
-        if not self.t2_input_file_path_display.text() and not self.t2_hash_file_path_display.text():
+        if not self.t2_input_file_path_display.text() or not self.t2_hash_file_path_display.text():
             QMessageBox.warning(self, "Missing Input", "Please load an input and a hash file for verifying the hash.")
         else:
             retList = interface.If_verify_hash(
@@ -1098,7 +1093,7 @@ class mainWindow(QWidget):
     def t3_generate(self):
         if "cmac" in self.t3_mode_dropdown.currentText().lower():
             if self.t3_without_time_stamp_radio.isChecked():
-                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text():
+                if not self.t3_key_file_path_display.text() or not self.t3_input_path_file_display.text():
                     QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
                 else:
                     retList = interface.If_generate_CMAC(
@@ -1110,13 +1105,13 @@ class mainWindow(QWidget):
                     else:
                         QMessageBox.information(self, "CMAC Generation", retList[1])
             else:
-                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_user_time_stamp_display.text():
+                if not self.t3_key_file_path_display.text() or not self.t3_input_path_file_display.text() or not self.t3_time_stamp_display.text():
                     QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
                 else:
                     retList = interface.If_generate_cmac_with_time_stamp(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_user_time_stamp_display.text()
+                        self.t3_time_stamp_display.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC with timestamp generated successfully!")
@@ -1127,8 +1122,8 @@ class mainWindow(QWidget):
                 QMessageBox.warning(self, "Missing Input", "Please load an Input file for generating CRC.")
             else:
                 retList = interface.If_generate_crc(
-                    self.t2_input_file_path_display.text(),
-                    self.t2_algorithm_dropdown.currentText()
+                    self.t3_input_path_file_display.text(),
+                    self.t3_crc_algorithm_dropdown.currentText()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "CRC Generation", "CRC generated successfully!")
@@ -1138,7 +1133,7 @@ class mainWindow(QWidget):
     def t3_verify(self):
         if "cmac" in self.t3_mode_dropdown.currentText().lower():
             if self.t3_without_time_stamp_radio.isChecked():
-                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_cmac_verification_path_display.text():
+                if not self.t3_key_file_path_display.text() or not self.t3_input_path_file_display.text() or not self.t3_cmac_verification_path_display.text():
                     QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file and a verification file for verifying CMAC.")
                 else:
                     retList = interface.If_verify_cmac(
@@ -1151,7 +1146,7 @@ class mainWindow(QWidget):
                     else:
                         QMessageBox.information(self, "CMAC Verification", retList[1])
             else:
-                if not self.t3_key_file_path_display.text() and not self.t3_input_path_file_display.text() and not self.t3_user_time_stamp_display.text() and not self.t3_user_time_threshold_display.text():
+                if not self.t3_key_file_path_display.text() or not self.t3_input_path_file_display.text() or not self.t3_user_time_stamp_display.text() or not self.t3_user_time_threshold_display.text():
                     QMessageBox.warning(self, "Missing Input", "Please load a key and an Input file for generating CMAC.")
                 else:
                     retList = interface.If_verify_cmac_with_time_stamp(
@@ -1166,19 +1161,19 @@ class mainWindow(QWidget):
                     else:
                         QMessageBox.information(self, "CMAC Verification", retList[1])
         else:
-            if not self.t3_input_path_file_display.text() and not self.t3_crc_verification_path_display.text():
+            if not self.t3_input_path_file_display.text() or not self.t3_crc_verification_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load an Input file and a crc file for verifying CRC.")
             else:
                 retList = interface.If_verify_crc(
                     self.t3_input_path_file_display.text(),
                     self.t3_crc_verification_path_display.text(),
-                    self.t2_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText()
                 )
-                QMessageBox.information(self, "CRC Verification", "CRC verified successfully!")
+                QMessageBox.information(self, f"{retList[0]}", f"{retList[1]}")
 
     def generate_random_bytes(self):
         interface.If_generate_random_bytes(self.t3_number_of_bytes_dropdown.currentText())
-        QMessageBox(self, "Random Byte", "Random Bytes generated Successfully.")
+        QMessageBox.information(self, "Random Byte", "Random Bytes generated Successfully.")
 
 # Main execution
 if __name__ == '__main__':

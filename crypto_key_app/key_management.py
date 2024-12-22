@@ -128,7 +128,7 @@ def load_symmetric_key(file_path):
 
         # Ensure the PEM headers are present
         if not ((lines[0].strip() == "-----BEGIN SYMMETRIC KEY-----" and
-                lines[-1].strip() == "-----END SYMMETRIC KEY-----"))or ((lines[0].strip() == "-----BEGIN AES KEY-----" and
+                lines[-1].strip() == "-----END SYMMETRIC KEY-----") or (lines[0].strip() == "-----BEGIN AES KEY-----" and
                 lines[-1].strip() == "-----END AES KEY-----")):
             raise ValueError("Invalid PEM format: Missing BEGIN/END KEY headers.")
         key = ''.join(lines[1:-1]).strip()

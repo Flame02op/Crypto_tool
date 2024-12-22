@@ -15,9 +15,9 @@ def calculate_crc(data, algorithm='crc-32'):
 
 def verify_crc(data, algorithm, calculated_crc):
     try:
-        actual_crc = calculate_crc(data,algorithm)
+        _, actual_crc = calculate_crc(data, algorithm)
         if actual_crc == calculated_crc:
-            return("Success", "CRC verified")
+            return("Success", "CRC verified   ")
         else:
             return("Failure", "Verification failed")
     except Exception as e:
@@ -25,7 +25,7 @@ def verify_crc(data, algorithm, calculated_crc):
 
 def check_for_algorithm(algorithm=''):
     for algo in crcmod.predefined._crc_definitions_by_name.values():
-        print(algo["name"])
+        # print(algo["name"])
         if algorithm == algo['name']:
             return True
     return False
