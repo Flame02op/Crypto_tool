@@ -49,7 +49,6 @@ def update_hash_longMessage(hasher_obj, message_block, selected_hash=None, filep
         if validate_message(message_block):
             hasher_obj.update(message_block)
             if filepath and selected_hash:
-                print("Updating Hasher")
                 with open(filepath, "wb") as fout:
                     state = hasher_obj.copy().finalize()
                     pickle.dump((selected_hash, state), fout)
@@ -95,7 +94,6 @@ def verify_rsa_signature_longMessage(public_key, hasher, signature, selected_has
                 ),
                 utils.Prehashed(signature_schemes[selected_hash]())
             )
-            print("sign verified")
             return("Success", "Signature Verified")
     except InvalidSignature:
         return("Failure", "Invalid Signature")
@@ -131,7 +129,6 @@ def verify_rsa_signature(public_key, message, signature, selected_hash='sha256')
                 ),
                 signature_schemes[selected_hash]()
             )
-            print("sign verified")
             return("Success", "Signature verified")            
     except InvalidSignature:
         return("Failure", "Invalid Signature")

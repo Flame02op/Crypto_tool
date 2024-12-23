@@ -10,15 +10,16 @@ aes_encryption = {
 }
 
 encryption_algorithms = {
+    "SHA224"     : hashes.SHA224,
     "SHA256"     : hashes.SHA256,
     "SHA384"     : hashes.SHA384,
     "SHA512"     : hashes.SHA512,
-    "MD5"        : hashes.MD5,
+    "md5"        : hashes.MD5,
     "SHA3-256"   : hashes.SHA3_256,
     "SHA3-384"   : hashes.SHA3_384,
     "SHA3-512"   : hashes.SHA3_512,
-    'blake2b'    : hashes.BLAKE2b,
-    'blake2s'    : hashes.BLAKE2s,
+    'blake2b': lambda: hashes.BLAKE2b(digest_size=64),
+    'blake2s': lambda: hashes.BLAKE2s(digest_size=32),
 }
 
 def aes_encrypt(key, iv, plaintext, encryption_algorithm = "CBC"):
@@ -47,10 +48,16 @@ def aes_decrypt(key, iv, ciphertext, encryption_algorithm='CBC'):
         unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
         
         return ("Success", unpadded_data)
+    except ValueError as e:
+        return ("Failure", str(e))
     except Exception as e:
         return ("Error", str(e))
 
 def rsa_encrypt(public_key, plaintext, encryption_algorithm):
+    if encryption_algorithm.startswith("SHA3"):
+        return ("Failure", f"SHA-3 family algorithms are not supported with OAEP padding")
+    elif encryption_algorithm == "md5" or encryption_algorithm == "SHA224":
+        return ("Failure", f" {encryption_algorithm} with RSA encryption and OAEP padding is not recommended due to security concerns")
     if encryption_algorithm not in encryption_algorithms:
         return ("Error", f"Given algorithm '{encryption_algorithm}' is not supported for encryption")
     try:
@@ -58,7 +65,7 @@ def rsa_encrypt(public_key, plaintext, encryption_algorithm):
             plaintext,
             pad.OAEP(
                 mgf=pad.MGF1(algorithm=encryption_algorithms[encryption_algorithm]()),
-                algorithm=hashes.SHA256(),
+                algorithm=encryption_algorithms[encryption_algorithm](),
                 label=None
             )
         )
@@ -67,6 +74,10 @@ def rsa_encrypt(public_key, plaintext, encryption_algorithm):
         return ("Error", str(e))
 
 def rsa_decrypt(private_key, ciphertext, encryption_algorithm):
+    if encryption_algorithm.startswith("SHA3"):
+        return ("Failure", f"SHA-3 family algorithms are not supported with OAEP padding")
+    elif encryption_algorithm == "md5" or encryption_algorithm == "SHA224":
+        return ("Failure", f" {encryption_algorithm} with RSA encryption and OAEP padding is not recommended due to security concerns")
     if encryption_algorithm not in encryption_algorithms:
         return ("Error", f"Given algorithm '{encryption_algorithm}' is not supported for decryption")
     try:
@@ -74,10 +85,12 @@ def rsa_decrypt(private_key, ciphertext, encryption_algorithm):
             ciphertext,
             pad.OAEP(
                 mgf=pad.MGF1(algorithm=encryption_algorithms[encryption_algorithm]()),
-                algorithm=hashes.SHA256(),
+                algorithm=encryption_algorithms[encryption_algorithm](),
                 label=None
             )
         )
         return ("Success", plaintext)
+    except ValueError as e:
+        return ("Failure", str(e))
     except Exception as e:
         return ("Error", str(e))

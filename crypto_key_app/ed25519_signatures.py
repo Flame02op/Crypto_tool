@@ -6,10 +6,11 @@ def validate_message(message):
         raise ValueError("Message must be of type bytes or bytearray.")
     return True
 
+# Hash algorithm internally set to SHA-512 and thus no support for other hash algorithms
 def generate_ed25519_signature(private_key, message):
     try:
         if validate_message(message):
-            return ("success", private_key.sign(message))
+            return ("Success", private_key.sign(message))
     except Exception as e:
         return("Error", str(e))
 

@@ -1,12 +1,12 @@
 import hashlib
 
 secure_algorithms = {
-    'sha256'   : hashlib.sha256,
-    'sha384'   : hashlib.sha384,
-    'sha512'   : hashlib.sha512,
-    'sha3_256' : hashlib.sha3_256,
-    'sha3_384' : hashlib.sha3_384,
-    'sha3_512' : hashlib.sha3_512,
+    'SHA256'   : hashlib.sha256,
+    'SHA384'   : hashlib.sha384,
+    'SHA512'   : hashlib.sha512,
+    'SHA3-256' : hashlib.sha3_256,
+    'SHA3-384' : hashlib.sha3_384,
+    'SHA3-512' : hashlib.sha3_512,
     'blake2b'  : hashlib.blake2b,
     'blake2s'  : hashlib.blake2s
     
@@ -15,7 +15,7 @@ secure_algorithms = {
 # Not recommended to use 
 non_secure_algorithms ={
     'md5'    : hashlib.md5,
-    'sha224' : hashlib.sha224,
+    'SHA224' : hashlib.sha224,
     'sha1'   : hashlib.sha1
 }
 

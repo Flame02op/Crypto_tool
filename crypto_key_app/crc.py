@@ -9,16 +9,15 @@ def calculate_crc(data, algorithm='crc-32'):
             crc_func = crcmod.predefined.mkPredefinedCrcFun(algorithm)
             return ("Success", crc_func(data))
         except Exception as e:
-            print(f"Error calculating CRC: {e}") 
             return ("Error", str(e))
     else:
         return ("Failure", f"Invalid algorithm name '{algorithm}'. Use a valid CRC algorithm name like 'crc-32', 'crc-16', etc.")
 
 def verify_crc(data, algorithm, calculated_crc):
     try:
-        actual_crc = calculate_crc(data,algorithm)
+        _, actual_crc = calculate_crc(data, algorithm)
         if actual_crc == calculated_crc:
-            return("Success", "CRC verified")
+            return("Success", "CRC verified   ")
         else:
             return("Failure", "Verification failed")
     except Exception as e:
@@ -26,7 +25,7 @@ def verify_crc(data, algorithm, calculated_crc):
 
 def check_for_algorithm(algorithm=''):
     for algo in crcmod.predefined._crc_definitions_by_name.values():
-        print(algo["name"])
+        # print(algo["name"])
         if algorithm == algo['name']:
             return True
     return False
