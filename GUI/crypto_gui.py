@@ -107,7 +107,6 @@ class mainWindow(QWidget):
 
         # Key file section
         self.t1_key_file_label = QLabel("Load Key")
-
         self.t1_private_key_file_btn = QPushButton("Load Private Key")
         self.t1_private_key_file_btn.clicked.connect(partial(self.load_private_key, "tab1"))
         self.t1_private_key_file_path_display = QLineEdit()
@@ -495,30 +494,207 @@ class mainWindow(QWidget):
         <h1>Crypto Tool</h1>
         <p>Welcome to the Crypto Tool! This tool provides various cryptographic functionalities including key generation, encryption, decryption, hashing, and more.</p>
         
-        <h2>Keys & Signature</h2>
+        <h2>Tab 1 : Keys & Signature</h2>
+
+        <h3>Key Generation</h3>
         <ul>
-            <li><b>Key Generation:</b> Generate RSA, ECDSA, or ED25519 keys.</li>
-            <li><b>Generate Sign:</b> Generate a digital signature for a given input file.</li>
-            <li><b>Verify Sign:</b> Verify a digital signature for a given input file.</li>
-            <li><b>Generate Sign for Long Message:</b> Generate a digital signature for a long message.</li>
-            <li><b>Verify Sign for Long Message:</b> Verify a digital signature for a long message.</li>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the key size for RSA/Symmetric keys or the hash function for ECDSA/ED25519 keys.</li>
+                    <li>Click on the <b>Generate</b> button.</li>
+                    <li>The generated key will be saved in the <code>temp/keys</code> directory.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Generate Signature</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the key type and the hash function.</li>
+                    <li>Load the corresponding key file and the input file that needs to be signed.</li>
+                    <li>Click on the <b>Generate</b> button.</li>
+                    <li>The signature file will be saved in the <code>temp/Sign</code> directory.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Verify Signature</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the key type and the hash function.</li>
+                    <li>Load the corresponding key file, the input file, and the signature file.</li>
+                    <li>Click on the <b>Verify</b> button.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Generate Signature for Long Messages</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>
+                        <b>Generate a hasher:</b>
+                        <ul>
+                            <li>Select the hash function and click on the <b>Generate Hasher</b> button.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Update the hasher with data:</b>
+                        <ul>
+                            <li>Load the input file and the previously generated hasher file.</li>
+                            <li>Click on the <b>Update Hasher</b> button to add data from the input file to the hasher.</li>
+                            <li>Repeat this step for each part of the long message until all data is updated in the hasher.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Generate the signature:</b>
+                        <ul>
+                            <li>Select the key type and load the key file and the updated hasher file.</li>
+                            <li>Click on the <b>Generate</b> button.</li>
+                        </ul>
+                    </li>
+                    <li>The signature file will be saved in the <code>temp/Sign</code> directory.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Verify Signature for Long Messages</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the key type and the hash function.</li>
+                    <li>Load the corresponding key file, the updated hasher file, and the signature file.</li>
+                    <li>Click on the <b>Verify</b> button.</li>
+                </ul>
+            </li>
         </ul>
         
         <h2>Encrypt/Decrypt & Hashing</h2>
+
+        <h3>Encryption</h3>
         <ul>
-            <li><b>Encryption:</b> Encrypt a given input file using a specified algorithm.</li>
-            <li><b>Decryption:</b> Decrypt a given encrypted file using a specified algorithm.</li>
-            <li><b>Generate Hash:</b> Generate a hash for a given input file.</li>
-            <li><b>Verify Hash:</b> Verify a hash for a given input file.</li>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the encryption algorithm from the dropdown menu.</li>
+                    <li>Load the input file that you want to encrypt.</li>
+                    <li>Click on the <b>Encrypt</b> button to encrypt the file.</li>
+                    <li>The encrypted file will be saved in the <code>temp/Encryption</code> directory.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Decryption</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the decryption algorithm from the dropdown menu.</li>
+                    <li>Load the encrypted file that you want to decrypt.</li>
+                    <li>Click on the <b>Decrypt</b> button to decrypt the file.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Generate Hash</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the hash algorithm from the dropdown menu (e.g., SHA-256, MD5, etc.).</li>
+                    <li>Load the input file for which you want to generate a hash.</li>
+                    <li>Click on the <b>Generate Hash</b> button to compute the hash value.</li>
+                    <li>The hash value will be saved in the <code>temp/Hashes</code> directory as a file.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Verify Hash</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the hash algorithm used to generate the hash (e.g., SHA-256, MD5, etc.).</li>
+                    <li>Load the input file and the corresponding hash file for verification.</li>
+                    <li>Click on the <b>Verify Hash</b> button.</li>
+                    <li>The result will indicate whether the hash matches the input file (valid) or does not match (invalid).</li>
+                </ul>
+            </li>
         </ul>
         
-        <h2>CRC & CMAC & Random</h2>
+        <h2>CRC, CMAC, & Random</h2>
+
+        <h3>Generate CMAC</h3>
         <ul>
-            <li><b>Generate CMAC:</b> Generate a CMAC for a given input file.</li>
-            <li><b>Verify CMAC:</b> Verify a CMAC for a given input file.</li>
-            <li><b>Generate CRC:</b> Generate a CRC for a given input file.</li>
-            <li><b>Verify CRC:</b> Verify a CRC for a given input file.</li>
-            <li><b>Generate Random Numbers:</b> Generate random numbers or bytes.</li>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the CMAC algorithm from the dropdown menu (e.g., AES-CMAC).</li>
+                    <li>Load the input file for which you want to generate the CMAC.</li>
+                    <li>Provide or load the CMAC key as required by the algorithm.</li>
+                    <li>Click on the <b>Generate CMAC</b> button.</li>
+                    <li>The generated CMAC will be displayed on the screen or saved in the <code>temp/CMAC</code> directory.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Verify CMAC</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the CMAC algorithm used to generate the CMAC (e.g., AES-CMAC).</li>
+                    <li>Load the input file, the CMAC value file, and the corresponding key.</li>
+                    <li>Click on the <b>Verify CMAC</b> button.</li>
+                    <li>The result will indicate whether the CMAC matches the input file (valid) or does not match (invalid).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Generate CRC</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the CRC algorithm or polynomial from the dropdown menu (e.g., CRC-32, CRC-16).</li>
+                    <li>Load the input file for which you want to generate the CRC.</li>
+                    <li>Click on the <b>Generate CRC</b> button.</li>
+                    <li>The generated CRC value will be displayed on the screen or saved in the <code>temp/CRC</code> directory.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Verify CRC</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the CRC algorithm or polynomial used to generate the CRC (e.g., CRC-32, CRC-16).</li>
+                    <li>Load the input file and the corresponding CRC value file.</li>
+                    <li>Click on the <b>Verify CRC</b> button.</li>
+                    <li>The result will indicate whether the CRC matches the input file (valid) or does not match (invalid).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Generate Random Numbers</h3>
+        <ul>
+            <li>
+                <b>Steps:</b>
+                <ul>
+                    <li>Select the type of random generation (e.g., numbers, bytes) from the dropdown menu.</li>
+                    <li>Specify the desired length or range for the random output.</li>
+                    <li>Click on the <b>Generate Random</b> button.</li>
+                    <li>The generated random numbers or bytes will be displayed on the screen or saved in the <code>temp/Random</code> directory.</li>
+                </ul>
+            </li>
         </ul>
         
         <h2>How to Use</h2>

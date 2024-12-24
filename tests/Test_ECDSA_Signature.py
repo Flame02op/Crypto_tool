@@ -16,90 +16,100 @@ class TestVerifyECDSASignatureLongMessage(unittest.TestCase):
         self.private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
         self.public_key = self.private_key.public_key()
         self.message = b"Test message for ECDSA signature"
-        self.hasher = generate_hash_longMessage('sha256')
+        self.hasher = generate_hash_longMessage('SHA256')
         update_hash_longMessage(self.hasher, self.message)
-        self.signature = self.private_key.sign(
-            self.hasher.finalize(),
-            ec.ECDSA(hashes.SHA256())
-        )
+
+        status, self.signature = generate_ecdsa_signature_longMessage(self.private_key, self.hasher, 'SHA256')
+        self.assertEqual(status, "Success")
 
     def test_verify_valid_signature(self):
-        hasher = generate_hash_longMessage('sha256')
+        hasher = generate_hash_longMessage('SHA256')
         update_hash_longMessage(hasher, self.message)
-        result = verify_ecdsa_signature_longMessage(self.public_key, hasher, self.signature, 'sha256')
-        self.assertIsNone(result)  # verify_ecdsa_signature_longMessage prints "sign verified" and returns None
+        status, result = verify_ecdsa_signature_longMessage(self.public_key, hasher, self.signature, 'SHA256')
+        self.assertEqual(status, "Success")
+        self.assertEqual(result, "Signature verified")
 
     def test_verify_invalid_signature(self):
-        hasher = generate_hash_longMessage('sha256')
+        hasher = generate_hash_longMessage('SHA256')
         update_hash_longMessage(hasher, self.message)
         invalid_signature = b"invalid_signature"
-        result = verify_ecdsa_signature_longMessage(self.public_key, hasher, invalid_signature, 'sha256')
-        self.assertIsNone(result)  # verify_ecdsa_signature_longMessage prints "Signature is invalid" and returns None
+        status, result = verify_ecdsa_signature_longMessage(self.public_key, hasher, invalid_signature, 'SHA256')
+        self.assertEqual(status, "Failure")
+        self.assertEqual(result, "Invalid Signature")
 
     def test_verify_invalid_hash_algorithm(self):
-        hasher = generate_hash_longMessage('sha256')
+        hasher = generate_hash_longMessage('SHA256')
         update_hash_longMessage(hasher, self.message)
-        with self.assertRaises(ValueError):
-            verify_ecdsa_signature_longMessage(self.public_key, hasher, self.signature, 'invalid_hash')
+        status, result = verify_ecdsa_signature_longMessage(self.public_key, hasher, self.signature, 'invalid_hash')
+        self.assertEqual(status, "Error")
+        self.assertIn("Please select a valid signing scheme", result)
 
     def test_verify_invalid_hasher(self):
         invalid_hasher = object()  # Not a valid hasher object
-        with self.assertRaises(ValueError):
-            verify_ecdsa_signature_longMessage(self.public_key, invalid_hasher, self.signature, 'sha256')
+        status, result = verify_ecdsa_signature_longMessage(self.public_key, invalid_hasher, self.signature, 'SHA256')
+        self.assertEqual(status, "Error")
+        self.assertIn("Invalid hasher object", result)
 
 class TestGenerateECDSASignaturesLongMessage(unittest.TestCase):
 
     def setUp(self):
         self.private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
         self.message = b"Test message for ECDSA signature"
-        self.hasher = generate_hash_longMessage('sha256')
+        self.hasher = generate_hash_longMessage('SHA256')
         update_hash_longMessage(self.hasher, self.message)
 
     def test_generate_ecdsa_signature_longMessage(self):
-        signature = generate_ecdsa_signature_longMessage(self.private_key, self.hasher, 'sha256')
+        status, signature = generate_ecdsa_signature_longMessage(self.private_key, self.hasher, 'SHA256')
+        self.assertEqual(status, "Success")
         self.assertIsNotNone(signature)
         self.assertIsInstance(signature, bytes)
 
     def test_generate_ecdsa_signature_longMessage_invalid_hash(self):
-        with self.assertRaises(ValueError):
-            generate_ecdsa_signature_longMessage(self.private_key, self.hasher, 'invalid_hash')
+        status, result = generate_ecdsa_signature_longMessage(self.private_key, self.hasher, 'invalid_hash')
+        self.assertEqual(status, "Error")
+        self.assertIn("Please select a valid signing scheme", result)
 
     def test_generate_ecdsa_signature_longMessage_invalid_hasher(self):
-        with self.assertRaises(ValueError):
-            generate_ecdsa_signature_longMessage(self.private_key, "invalid_hasher", 'sha256')
+        status, result = generate_ecdsa_signature_longMessage(self.private_key, "invalid_hasher", 'SHA256')
+        self.assertEqual(status, "Error")
+        self.assertIn("Invalid hasher object", result)
 
 class TestGenerateHash(unittest.TestCase):
 
     def test_generate_hash_longMessage_valid(self):
-        hasher = generate_hash_longMessage('sha256')
+        hasher = generate_hash_longMessage('SHA256')
         self.assertIsInstance(hasher, hashes.Hash)
         self.assertEqual(hasher.algorithm.name, 'sha256')
 
     def test_generate_hash_longMessage_invalid(self):
-        with self.assertRaises(ValueError):
-            generate_hash_longMessage('invalid_hash')
+        status, result = generate_hash_longMessage('invalid_hash')
+        self.assertEqual(status, "Error")
+        self.assertIn("Please select a valid signing scheme", result)
 
     def test_generate_hash_longMessage_default(self):
-        hasher = generate_hash_longMessage()
+        hasher = generate_hash_longMessage('SHA256')
         self.assertIsInstance(hasher, hashes.Hash)
         self.assertEqual(hasher.algorithm.name, 'sha256')
 
 class TestUpdateECDSAHash(unittest.TestCase):
 
     def test_update_hash_longMessage_valid(self):
-        hasher = generate_hash_longMessage('sha256')
+        hasher = generate_hash_longMessage('SHA256')
         message_block = b"test message"
-        update_hash_longMessage(hasher, message_block)
-        assert hasher is not None
+        status, result = update_hash_longMessage(hasher, message_block)
+        self.assertEqual(status, "Success")
+        self.assertEqual(result, "Hasher Updated")
 
     def test_update_hash_longMessage_invalid_hasher(self):
-        with pytest.raises(ValueError, match="Invalid hasher object, please create a hasher object with generate_hash_longmessage"):
-            update_hash_longMessage(None, b"test message")
+        status, result = update_hash_longMessage(None, b"test message")
+        self.assertEqual(status, "Error")
+        self.assertIn("Invalid hasher object", result)
 
     def test_update_hash_longMessage_invalid_message(self):
-        hasher = generate_hash_longMessage('sha256')
-        with pytest.raises(ValueError, match="Message must be of type bytes or bytearray."):
-            update_hash_longMessage(hasher, "invalid message")
+        hasher = generate_hash_longMessage('SHA256')
+        status, result = update_hash_longMessage(hasher, "invalid message")
+        self.assertEqual(status, "Error")
+        self.assertIn("Message must be of type bytes or bytearray", result)
 
 class TestVerifyECDSASignatures(unittest.TestCase):
 
@@ -107,40 +117,47 @@ class TestVerifyECDSASignatures(unittest.TestCase):
         self.private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
         self.public_key = self.private_key.public_key()
         self.message = b"Test message"
-        self.signature = generate_ecdsa_signature(self.private_key, self.message, 'sha256')
+        status, self.signature = generate_ecdsa_signature(self.private_key, self.message, 'SHA256')
+        self.assertEqual(status, "Success")
 
     def test_verify_ecdsa_signature_valid(self):
-        result = verify_ecdsa_signature(self.public_key, self.message, self.signature, 'sha256')
-        self.assertIsNone(result)  # verify_ecdsa_signature prints "sign verified" and returns None on success
+        status, result = verify_ecdsa_signature(self.public_key, self.message, self.signature, 'SHA256')
+        self.assertEqual(status, "Success")
+        self.assertEqual(result, "Signature verified")
 
     def test_verify_ecdsa_signature_invalid(self):
         invalid_signature = b"Invalid signature"
-        result = verify_ecdsa_signature(self.public_key, self.message, invalid_signature, 'sha256')
-        self.assertIsNone(result)  # verify_ecdsa_signature prints "Signature is invalid" and returns None on failure
+        status, result = verify_ecdsa_signature(self.public_key, self.message, invalid_signature, 'SHA256')
+        self.assertEqual(status, "Failure")
+        self.assertEqual(result, "Invalid Signature")
 
     def test_verify_ecdsa_signature_invalid_message(self):
         invalid_message = b"Invalid message"
-        result = verify_ecdsa_signature(self.public_key, invalid_message, self.signature, 'sha256')
-        self.assertIsNone(result)  # verify_ecdsa_signature prints "Signature is invalid" and returns None on failure
+        status, result = verify_ecdsa_signature(self.public_key, invalid_message, self.signature, 'SHA256')
+        self.assertEqual(status, "Failure")
+        self.assertEqual(result, "Invalid Signature")
 
 class TestGenerateECDSASignatures(unittest.TestCase):
 
     def setUp(self):
         self.private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
         self.message = b"Test message"
-        self.selected_hash = 'sha256'
+        self.selected_hash = 'SHA256'
 
     def test_generate_ecdsa_signature_valid(self):
-        signature = generate_ecdsa_signature(self.private_key, self.message, self.selected_hash)
+        status, signature = generate_ecdsa_signature(self.private_key, self.message, self.selected_hash)
+        self.assertEqual(status, "Success")
         self.assertIsNotNone(signature)
 
     def test_generate_ecdsa_signature_invalid_hash(self):
-        with self.assertRaises(ValueError):
-            generate_ecdsa_signature(self.private_key, self.message, 'invalid_hash')
+        status, result = generate_ecdsa_signature(self.private_key, self.message, 'invalid_hash')
+        self.assertEqual(status, "Error")
+        self.assertIn("Please select a valid signing scheme", result)
 
     def test_generate_ecdsa_signature_invalid_message(self):
-        with self.assertRaises(ValueError):
-            generate_ecdsa_signature(self.private_key, "invalid_message", self.selected_hash)
+        status, result = generate_ecdsa_signature(self.private_key, "invalid_message", self.selected_hash)
+        self.assertEqual(status, "Error")
+        self.assertIn("Message must be of type bytes or bytearray", result)
         
 if __name__ == '__main__':
     unittest.main()

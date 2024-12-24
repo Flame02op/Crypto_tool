@@ -50,7 +50,7 @@ def generate_cmac_with_timestamp(key, message, timestamp):
         cmac_obj.update(message_with_timestamp)
         return ("Success", cmac_obj.finalize())
     except Exception as e:
-        return ("Error", e, None)
+        return ("Error", str(e))
 
 def verify_cmac_with_timestamp(key, message, expected_cmac, timestamp, time_threshold=60):
     try:

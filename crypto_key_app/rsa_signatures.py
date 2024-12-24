@@ -17,7 +17,7 @@ signature_schemes ={
 
 def validate_hash_algorithm(selected_hash):
     if selected_hash not in signature_schemes:
-        return ValueError(signature_schemes["raise_invalid"])
+        raise ValueError(signature_schemes["raise_invalid"])
     return True
 
 def validate_message(message):
@@ -26,21 +26,19 @@ def validate_message(message):
     return True
 
 def generate_hash_longMessage(selected_hash, filepath=None):
-    if validate_hash_algorithm(selected_hash):
         try:
-            hasher_obj = hashes.Hash(signature_schemes[selected_hash]())
-            if filepath:
-                with open("./Temp/Sign/Hasher.hash", "wb") as fout:
-                    # Serialize the state of the hasher
-                    state = hasher_obj.copy().finalize()
-                    pickle.dump((selected_hash, state), fout)
-                return ("Success", "Hasher generated successfully")
-            else:
-                return hasher_obj
+            if validate_hash_algorithm(selected_hash):
+                hasher_obj = hashes.Hash(signature_schemes[selected_hash]())
+                if filepath:
+                    with open("./Temp/Sign/Hasher.hash", "wb") as fout:
+                        # Serialize the state of the hasher
+                        state = hasher_obj.copy().finalize()
+                        pickle.dump((selected_hash, state), fout)
+                    return ("Success", "Hasher generated successfully")
+                else:
+                    return hasher_obj
         except Exception as e:
             return("Error", str(e))
-    else:
-        return ("Error", str(signature_schemes["raise_invalid"]))
 
 def update_hash_longMessage(hasher_obj, message_block, selected_hash=None, filepath=None):
     try:
@@ -52,7 +50,7 @@ def update_hash_longMessage(hasher_obj, message_block, selected_hash=None, filep
                 with open(filepath, "wb") as fout:
                     state = hasher_obj.copy().finalize()
                     pickle.dump((selected_hash, state), fout)
-                return ("Success", "Hasher Updated")
+            return ("Success", "Hasher Updated")
     except Exception as e:
         return ("Error", str(e))
     
