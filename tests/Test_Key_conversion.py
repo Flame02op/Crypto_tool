@@ -24,7 +24,8 @@ class TestKeyConversion_H2P(unittest.TestCase):
         )
 
         # Convert the PEM key to hex
-        hex_key = pem_to_hex(private_key)
+        status, hex_key = pem_to_hex(private_key)
+        self.assertEqual(status, "Success")
 
         # Convert the hex key back to PEM bytes
         pem_bytes_from_hex = bytes.fromhex(hex_key)
@@ -44,16 +45,24 @@ class TestKeyConversion_P2H(unittest.TestCase):
         
         # Convert the private key to PEM format
         pem_key = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption()
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
         )
         
         # Convert the PEM key to hex
         hex_key = pem_key.hex()
         
         # Convert the hex key back to PEM
-        result_pem = hex_to_pem(hex_key)
+        status, result_pem = hex_to_pem("RSA", hex_key)
+
+        # Serialize the returned pem object
+        result_pem = result_pem.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+        self.assertEqual(status, "Success")
         
         # Check if the original PEM and the result PEM are the same
         self.assertEqual(pem_key, result_pem)
