@@ -54,7 +54,10 @@ def pem_to_hex(pem_key):
             )
             return ("Success", pem_bytes.hex())
         elif key_type == "Symmetric key":
-            pem_key = pem_key.replace("-----BEGIN AES KEY-----\n", "").replace("\n-----END AES KEY-----", "")
+            if "AES" in pem_key:
+                pem_key = pem_key.replace("-----BEGIN AES KEY-----\n", "").replace("\n-----END AES KEY-----", "")
+            elif "Symmetric" in pem_key:
+                pem_key = pem_key.replace("-----BEGIN SYMMETRIC KEY-----\n", "").replace("\n-----END SYMMETRIC KEY-----", "")
             hex_key = base64.b64decode(pem_key)
             return ("Success", hex_key.hex())
         else:

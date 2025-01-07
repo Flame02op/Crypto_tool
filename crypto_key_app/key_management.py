@@ -132,7 +132,7 @@ def load_symmetric_key(file_path):
                 lines[-1].strip() == "-----END AES KEY-----")):
             raise ValueError("Invalid PEM format: Missing BEGIN/END KEY headers.")
         key = ''.join(lines[1:-1]).strip()
-        key = base64.b64decode(key)
+        # key = base64.b64decode(key)
         return ("Success", key)
     except Exception as e:
         print("Failed to load symmetric key:", str(e))

@@ -733,8 +733,8 @@ class mainWindow(QWidget):
         self.t1_key_size_dropdown.setVisible(key_generation_mode and rsa_key_selected)
 
         # Key conversion components
-        self.t1_algorithm_label.setVisible(not key_conversion_mode)
-        self.t1_algorithm_dropdown.setVisible(not key_conversion_mode)
+        self.t1_algorithm_label.setVisible(not key_conversion_mode and not sign_with_ed25519)
+        self.t1_algorithm_dropdown.setVisible(not key_conversion_mode and not sign_with_ed25519)
         self.t1_key_conversion_mode_label.setVisible(key_conversion_mode)
         self.t1_pem_to_hex_radio.setVisible(key_conversion_mode)
         self.t1_hex_to_pem_radio.setVisible(key_conversion_mode)
@@ -751,8 +751,6 @@ class mainWindow(QWidget):
         self.t1_private_key_file_path_display.setVisible(generate_mode)
         self.t1_generate_signature_btn.setVisible(generate_mode)
         self.t1_key_file_label.setVisible(generate_mode or verify_mode)
-        self.t1_algorithm_label.setVisible(not sign_with_ed25519)
-        self.t1_algorithm_dropdown.setVisible(not sign_with_ed25519)
         
         # Public key (verification modes)
         self.t1_public_key_file_btn.setVisible(verify_mode)
