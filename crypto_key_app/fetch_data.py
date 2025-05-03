@@ -1,9 +1,12 @@
 import re
+import rsa_signatures as sign
+import key_management as keys
+import base64
 
 memory_map = {}
 
 def parse_srec(file_path):
-    """Parses an SREC file and extracts payload data, formatting it like a hex viewer."""
+    """Parses an SREC file and extracts payload data"""
     
     with open(file_path, 'r') as file:
         for line in file:
@@ -44,15 +47,46 @@ def extract_data(sorted_keys, start_addr=None, end_addr=None):
 
     return "\n".join(result)
 
-# srec_file = "./Zeekr_IHU_CX1E_BM.srec"
-# sorted_keys = parse_srec(srec_file)
+def parse_data(filepath, start_add, end_add):
+    srec_file = r"./Zeekr_IHU_CX1E_BM.srec"
+    sorted_keys = parse_srec(srec_file)
 
-# start_address = 0xA0080000
-# end_address = 0xA0080000
+    # start_address = 0xA0080000
+    # end_address = 0xA008FFB8
+    if start_add is None:
+        start_add = sorted_keys[0]  # First address in the sorted keys
+    if end_add is None:
+        end_add = sorted_keys[-1]  # Last address in the sorted keys
 
-# for i in range(0,20):
-#     start_address = end_address
-#     end_address += 0x10
-#     formatted_output = extract_data(sorted_keys, start_address, end_address)
-#     formatted_output = formatted_output[:-2]
-#     print(formatted_output)
+    print(hex(start_add), hex(end_add))
+    print("\n")
+
+    # for i in range(0,20):
+    #     start_address = end_address
+    #     end_address += 0x10
+    #     formatted_output = extract_data(sorted_keys, start_address, end_address)
+    #     formatted_output = formatted_output[:-2]
+    #     print(formatted_output)
+
+    formatted_output = extract_data(sorted_keys, start_add, end_add)
+
+    output_data = formatted_output.split(":")[1].replace(" ", "")[:-2]
+    return output_data
+
+if __name__ == "__main__":
+    status, private_key = keys.load_key("RSA", "./Temp/Keys/rsa_private_key.pem")
+    status, public_key = keys.load_key("RSA", "./Temp/Keys/rsa_public_key.pem")
+    data = parse_data(None, None, None)
+    print(type(data))
+    data_bytes = bytes.fromhex(data)
+    print(type(data_bytes))
+    retList = sign.generate_rsa_signature(private_key, data_bytes, "sha256")
+    signature1 = base64.b64encode(retList[1]).decode('utf-8')
+    with open("./Zeekr_IHU_CX1E_BM.srec", "rb") as fin:
+        message = fin.read()
+
+    retList = sign.generate_rsa_signature(private_key, message, "sha256")
+    signature2 = base64.b64encode(retList[1]).decode('utf-8')
+    print(signature1)
+    print("\n")
+    print(signature2)

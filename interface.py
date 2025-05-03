@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives import hashes
 import time
 import os
 import pickle
+import base64
 
 longMessage_callOut  = 0
 
@@ -197,8 +198,8 @@ def If_generate_sign(key_type, private_key_file, input_file, hash_algo):
         retList = ed25519_sign.generate_ed25519_signature(key, message)
 
     if retList[0] == "Success":
-        signature = retList[1]
-        with open(f"./Temp/Sign/{input_file_name}.Signed", "wb") as sign_file:
+        signature = base64.b64encode(retList[1]).decode('utf-8')
+        with open(f"./Temp/Sign/{input_file_name}.Signed", "w") as sign_file:
             sign_file.write(signature)
         return ("Success", "Signature generated")
     elif status == "Failure":
@@ -307,9 +308,9 @@ def If_generate_signForLongMessage(key_type, private_key_file, hasher_file, hash
         else:
             return ("Warning", f"{key_type} does not support long message signing")
         if retList[0] == "Success":
-            signature = retList[1]
+            signature = base64.b64encode(retList[1]).decode('utf-8')
             createTempDir("./Temp/Sign")
-            with open(f"./Temp/Sign/{hasher_file_name}.sign", "wb") as fout:
+            with open(f"./Temp/Sign/{hasher_file_name}.sign", "w") as fout:
                 fout.write(signature)
             return ("Success", "Signature generated")
         else:
