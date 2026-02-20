@@ -994,9 +994,6 @@ class mainWindow(QWidget):
                 background-color: #f5f5f5;
                 color: #555;
             }
-            QLineEdit[placeholderText] {
-                color: #888;
-            }
             QPushButton {
                 padding: 10px 16px;
                 border-radius: 5px;
