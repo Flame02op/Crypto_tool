@@ -1,9 +1,9 @@
 import sys, os, time
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation
 from functools import partial
 from PyQt5.QtWidgets import (QApplication, QScrollArea, QFormLayout, QWidget, QLabel, 
                              QRadioButton, QVBoxLayout, QTabWidget, QLineEdit, QPushButton, 
-                             QFileDialog, QComboBox, QGridLayout, QMessageBox, QTextEdit)
+                             QFileDialog, QComboBox, QGridLayout, QMessageBox, QTextEdit, QGraphicsOpacityEffect)
 
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
@@ -14,6 +14,20 @@ class mainWindow(QWidget):
     def __init__(self, parent=None):
         super(mainWindow, self).__init__(parent)
         self.initUI()
+
+    def fade_in_widget(self, widget):
+        # Create an opacity effect
+        opacity_effect = QGraphicsOpacityEffect()
+        widget.setGraphicsEffect(opacity_effect)
+
+        # Create an animation for the opacity effect
+        animation = QPropertyAnimation(opacity_effect, b"opacity")
+        animation.setDuration(500)  # 500ms
+        animation.setStartValue(0)  # Fully transparent
+        animation.setEndValue(1)    # Fully opaque
+        animation.start()
+        # Keep a reference to the animation to prevent it from being garbage collected
+        self.animation = animation
         
     def initUI(self):
         # Main layout
@@ -41,6 +55,7 @@ class mainWindow(QWidget):
         self.setupTabThree()
         self.setupTabFour()
         self.apply_styles()
+        self.fade_in_widget(self.tabs) 
 
     def setupTabOne(self):
         # Mode Selector
@@ -872,6 +887,12 @@ class mainWindow(QWidget):
     def apply_styles(self):
         """Apply styles for a more polished UI."""
         self.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(
+                    x1: 0, y1: 0, x2: 1, y2: 1,
+                    stop: 0 #ffffff, stop: 1 #d7e8f7
+                );
+            }
             QTabWidget::pane {
                 border-top: 2px solid #444;
                 padding: 5px;
@@ -905,7 +926,7 @@ class mainWindow(QWidget):
             }
             QPushButton {
                 padding: 8px;
-                border-radius: 4px;
+                border-radius: 8px;  /* Rounded corners */
                 background-color: #0078D7;
                 color: white;
                 font-weight: bold;
