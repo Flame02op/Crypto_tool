@@ -30,7 +30,7 @@ def aes_encrypt(key, iv, plaintext, encryption_algorithm = "CBC"):
         encryptor = cipher.encryptor()
         
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
-        padded_plaintext = padder.update(plaintext.encode()) + padder.finalize()
+        padded_plaintext = padder.update(plaintext) + padder.finalize()
         
         return ("Success" , encryptor.update(padded_plaintext) + encryptor.finalize())
     except Exception as e:

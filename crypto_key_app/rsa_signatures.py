@@ -16,7 +16,7 @@ signature_schemes ={
 }
 
 def validate_hash_algorithm(selected_hash):
-    if selected_hash not in signature_schemes:
+    if selected_hash.upper() not in signature_schemes:
         raise ValueError(signature_schemes["raise_invalid"])
     return True
 
@@ -28,7 +28,7 @@ def validate_message(message):
 def generate_hash_longMessage(selected_hash, filepath=None):
         try:
             if validate_hash_algorithm(selected_hash):
-                hasher_obj = hashes.Hash(signature_schemes[selected_hash]())
+                hasher_obj = hashes.Hash(signature_schemes[selected_hash.upper()]())
                 if filepath:
                     with open("./Temp/Sign/Hasher.hash", "wb") as fout:
                         # Serialize the state of the hasher
@@ -66,10 +66,10 @@ def generate_rsa_signature_longMessage(private_key, hasher, selected_hash='sha25
                     private_key.sign(
                     digest,
                     padding.PSS(
-                        mgf=padding.MGF1(signature_schemes[selected_hash]()),
+                        mgf=padding.MGF1(signature_schemes[selected_hash.upper()]()),
                         salt_length=padding.PSS.MAX_LENGTH
                     ),
-                    utils.Prehashed(signature_schemes[selected_hash]())
+                    utils.Prehashed(signature_schemes[selected_hash.upper()]())
                 )
             )
     except Exception as e:
@@ -87,10 +87,10 @@ def verify_rsa_signature_longMessage(public_key, hasher, signature, selected_has
                 signature,
                 digest,
                 padding.PSS(
-                    mgf=padding.MGF1(signature_schemes[selected_hash]()),
+                    mgf=padding.MGF1(signature_schemes[selected_hash.upper()]()),
                     salt_length=padding.PSS.MAX_LENGTH
                 ),
-                utils.Prehashed(signature_schemes[selected_hash]())
+                utils.Prehashed(signature_schemes[selected_hash.upper()]())
             )
             return("Success", "Signature Verified")
     except InvalidSignature:
@@ -106,10 +106,10 @@ def generate_rsa_signature(private_key, message, selected_hash='sha256'):
                     private_key.sign(
                     message,
                     padding.PSS(
-                        mgf=padding.MGF1(signature_schemes[selected_hash]()),
+                        mgf=padding.MGF1(signature_schemes[selected_hash.upper()]()),
                         salt_length=padding.PSS.MAX_LENGTH
                     ),
-                    signature_schemes[selected_hash]()
+                    signature_schemes[selected_hash.upper()]()
                 )
             )
     except Exception as e:
@@ -122,10 +122,10 @@ def verify_rsa_signature(public_key, message, signature, selected_hash='sha256')
                 signature,
                 message,
                 padding.PSS(
-                    mgf=padding.MGF1(signature_schemes[selected_hash]()),
+                    mgf=padding.MGF1(signature_schemes[selected_hash.upper()]()),
                     salt_length=padding.PSS.MAX_LENGTH
                 ),
-                signature_schemes[selected_hash]()
+                signature_schemes[selected_hash.upper()]()
             )
             return("Success", "Signature verified")            
     except InvalidSignature:
