@@ -63,10 +63,10 @@ def parse_srec(file_path):
 
 def extract_data(sorted_keys, start_addr=None, end_addr=None):
 
-    if start_addr is not None:
-        sorted_keys = [addr for addr in sorted_keys if addr >= start_addr]
-    if end_addr is not None:
-        sorted_keys = [addr for addr in sorted_keys if addr <= end_addr]
+    if start_addr and start_addr is not None:
+        sorted_keys = [addr for addr in sorted_keys if addr >= int(start_addr, 16)]
+    if end_addr and end_addr is not None:
+        sorted_keys = [addr for addr in sorted_keys if addr <= int(end_addr, 16)]
 
     # Format output like a hex viewer
     result = []
