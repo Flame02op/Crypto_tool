@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QScrollArea, QFormLayout, QWidget, QL
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 import interface
+from crypto_key_app import file_parser
 
 class mainWindow(QWidget):
 
@@ -18,7 +19,7 @@ class mainWindow(QWidget):
     def initUI(self):
         # Main layout
         self.layout = QVBoxLayout(self)
-        self.setFixedSize(657, 650)
+        self.setFixedSize(700, 700)
         self.setWindowTitle('Crypto Tool')
 
         # Tabs
@@ -386,6 +387,15 @@ class mainWindow(QWidget):
         self.t3_input_path_file_display = QLineEdit()
         self.t3_input_path_file_display.setReadOnly(True)
 
+        # Start / End Address (shown only for .srec / .hex files)
+        self.t3_start_address_label = QLabel("Start Address (hex):")
+        self.t3_start_address_input = QLineEdit()
+        self.t3_start_address_input.setPlaceholderText("Optional  (e.g. 0x08000000)")
+
+        self.t3_end_address_label = QLabel("End Address (hex):")
+        self.t3_end_address_input = QLineEdit()
+        self.t3_end_address_input.setPlaceholderText("Optional  (e.g. 0x0801FFFF)")
+
         # Key File Section
         self.t3_key_file_label = QLabel("Key File:")
         self.t3_key_file_btn = QPushButton("Load key file")
@@ -462,18 +472,25 @@ class mainWindow(QWidget):
         t3_layout.addWidget(self.t3_input_file_btn, 5, 1)
         t3_layout.addWidget(self.t3_input_path_file_display, 5, 2, 1, 2)
 
-        t3_layout.addWidget(self.t3_cmac_verification_file_label, 6, 0)
-        t3_layout.addWidget(self.t3_cmac_verification_file_btn, 6, 1)
-        t3_layout.addWidget(self.t3_cmac_verification_path_display, 6, 2, 1, 2)
+        # Address fields (rows 6 and 7)
+        t3_layout.addWidget(self.t3_start_address_label, 6, 0)
+        t3_layout.addWidget(self.t3_start_address_input, 6, 1, 1, 3)
 
-        t3_layout.addWidget(self.t3_crc_verification_file_label, 6, 0)
-        t3_layout.addWidget(self.t3_crc_verification_file_btn, 6, 1)
-        t3_layout.addWidget(self.t3_crc_verification_path_display, 6, 2, 1, 2)
+        t3_layout.addWidget(self.t3_end_address_label, 7, 0)
+        t3_layout.addWidget(self.t3_end_address_input, 7, 1, 1, 3)
 
-        t3_layout.addWidget(self.t3_generate_btn, 7, 0, 1, 4)
-        t3_layout.addWidget(self.t3_verify_btn, 7, 0, 1, 4)
+        t3_layout.addWidget(self.t3_cmac_verification_file_label, 8, 0)
+        t3_layout.addWidget(self.t3_cmac_verification_file_btn, 8, 1)
+        t3_layout.addWidget(self.t3_cmac_verification_path_display, 8, 2, 1, 2)
 
-        t3_layout.addWidget(self.t3_random_number_btn, 8, 0, 1, 4)
+        t3_layout.addWidget(self.t3_crc_verification_file_label, 8, 0)
+        t3_layout.addWidget(self.t3_crc_verification_file_btn, 8, 1)
+        t3_layout.addWidget(self.t3_crc_verification_path_display, 8, 2, 1, 2)
+
+        t3_layout.addWidget(self.t3_generate_btn, 9, 0, 1, 4)
+        t3_layout.addWidget(self.t3_verify_btn, 9, 0, 1, 4)
+
+        t3_layout.addWidget(self.t3_random_number_btn, 10, 0, 1, 4)
 
 
         self.tab3.setLayout(t3_layout)
@@ -868,64 +885,108 @@ class mainWindow(QWidget):
         self.t3_number_of_bytes_dropdown.setVisible(is_random_mode)
         self.t3_random_number_btn.setVisible(is_random_mode)
 
+        # Address fields: hide when in random mode; when switching mode re-evaluate
+        # based on the currently loaded file extension
+        if is_random_mode:
+            self._t3_set_address_fields_visible(False)
+        else:
+            self._t3_update_address_fields_visibility()
+
+
+    def _t3_set_address_fields_visible(self, visible):
+        """Show or hide the start/end address fields in tab 3."""
+        self.t3_start_address_label.setVisible(visible)
+        self.t3_start_address_input.setVisible(visible)
+        self.t3_end_address_label.setVisible(visible)
+        self.t3_end_address_input.setVisible(visible)
+
+    def _t3_update_address_fields_visibility(self):
+        """Show address fields only when the loaded input file is a SREC or HEX file."""
+        file_path = self.t3_input_path_file_display.text()
+        self._t3_set_address_fields_visible(bool(file_path) and file_parser.is_srec_or_hex_file(file_path))
 
     def apply_styles(self):
         """Apply styles for a more polished UI."""
         self.setStyleSheet("""
+            QWidget {
+                font-family: Segoe UI, Arial, sans-serif;
+                font-size: 13px;
+            }
             QTabWidget::pane {
-                border-top: 2px solid #444;
-                padding: 5px;
-                background: #F5F5F5;
+                border: 1px solid #B0BEC5;
+                border-top: 3px solid #0078D7;
+                padding: 8px;
+                background: #FAFAFA;
             }
             QTabWidget::tab-bar {
                 alignment: center;
             }
             QTabBar::tab {
-                background: #D3D3D3;
-                border: 1px solid #444;
-                padding: 8px 15px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
+                background: #E0E0E0;
+                border: 1px solid #B0BEC5;
+                padding: 8px 14px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
                 color: #333;
                 font-weight: bold;
+                min-width: 140px;
             }
             QTabBar::tab:selected {
-                background: #00509E;
+                background: #0078D7;
                 color: white;
                 font-weight: bold;
             }
+            QTabBar::tab:hover:!selected {
+                background: #BBDEFB;
+            }
             QLabel {
                 font-weight: bold;
+                color: #37474F;
             }
             QLineEdit {
-                padding: 5px;
-                border: 1px solid #ccc;
+                padding: 5px 8px;
+                border: 1px solid #B0BEC5;
                 border-radius: 4px;
-                background-color: #fff;
+                background-color: #FFFFFF;
+                color: #212121;
+                selection-background-color: #0078D7;
+            }
+            QLineEdit:focus {
+                border: 1px solid #0078D7;
+            }
+            QLineEdit[readOnly="true"] {
+                background-color: #F5F5F5;
+                color: #546E7A;
             }
             QPushButton {
-                padding: 8px;
+                padding: 7px 12px;
                 border-radius: 4px;
                 background-color: #0078D7;
                 color: white;
                 font-weight: bold;
+                border: none;
             }
             QPushButton:hover {
-                background-color: #00509E;
+                background-color: #005A9E;
+            }
+            QPushButton:pressed {
+                background-color: #003D6B;
             }
             QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
+                padding: 5px 8px;
+                border: 1px solid #B0BEC5;
                 border-radius: 4px;
-                background-color: #fff;
+                background-color: #FFFFFF;
+            }
+            QComboBox:focus {
+                border: 1px solid #0078D7;
             }
             QRadioButton {
                 font-weight: normal;
+                color: #37474F;
             }
-            QWidget#tab1 {
-                background-color: #f0f0f0;
-                padding: 15px;
-                border-radius: 5px;
+            QMessageBox {
+                background-color: #FFFFFF;
             }
         """)
 
@@ -958,6 +1019,7 @@ class mainWindow(QWidget):
                 self.t2_input_file_path_display.setText(file_path)
             elif tab == "tab3":
                 self.t3_input_path_file_display.setText(file_path)
+                self._t3_update_address_fields_visibility()
 
     def load_key_file(self, tab):
         file_path, _ = QFileDialog.getOpenFileName(self, 'Open Key File', '', 'Key Files (*.key *.pem);;All Files (*)')
@@ -1265,6 +1327,8 @@ class mainWindow(QWidget):
         self.t3_time_stamp_display.setText(timestamp)
 
     def t3_generate(self):
+        start_addr = self.t3_start_address_input.text().strip() or None
+        end_addr = self.t3_end_address_input.text().strip() or None
         if "cmac" in self.t3_mode_dropdown.currentText().lower():
             if self.t3_without_time_stamp_radio.isChecked():
                 if not self.t3_key_file_path_display.text() or not self.t3_input_path_file_display.text():
@@ -1272,7 +1336,8 @@ class mainWindow(QWidget):
                 else:
                     retList = interface.If_generate_CMAC(
                         self.t3_key_file_path_display.text(),
-                        self.t3_input_path_file_display.text()
+                        self.t3_input_path_file_display.text(),
+                        start_addr, end_addr
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC generated successfully!")
@@ -1285,7 +1350,8 @@ class mainWindow(QWidget):
                     retList = interface.If_generate_cmac_with_time_stamp(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_time_stamp_display.text()
+                        self.t3_time_stamp_display.text(),
+                        start_addr, end_addr
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC with timestamp generated successfully!")
@@ -1297,7 +1363,8 @@ class mainWindow(QWidget):
             else:
                 retList = interface.If_generate_crc(
                     self.t3_input_path_file_display.text(),
-                    self.t3_crc_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText(),
+                    start_addr, end_addr
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "CRC Generation", "CRC generated successfully!")
@@ -1305,6 +1372,8 @@ class mainWindow(QWidget):
                     QMessageBox.information(self, "CRC Generation", retList[1])
 
     def t3_verify(self):
+        start_addr = self.t3_start_address_input.text().strip() or None
+        end_addr = self.t3_end_address_input.text().strip() or None
         if "cmac" in self.t3_mode_dropdown.currentText().lower():
             if self.t3_without_time_stamp_radio.isChecked():
                 if not self.t3_key_file_path_display.text() or not self.t3_input_path_file_display.text() or not self.t3_cmac_verification_path_display.text():
@@ -1313,7 +1382,8 @@ class mainWindow(QWidget):
                     retList = interface.If_verify_cmac(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_cmac_verification_path_display.text()
+                        self.t3_cmac_verification_path_display.text(),
+                        start_addr, end_addr
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Verification", "CMAC Verified successfully!")
@@ -1328,7 +1398,8 @@ class mainWindow(QWidget):
                         self.t3_input_path_file_display.text(),
                         self.t3_cmac_verification_path_display.text(),
                         self.t3_user_time_stamp_display.text(),
-                        self.t3_user_time_threshold_display.text()
+                        self.t3_user_time_threshold_display.text(),
+                        start_addr, end_addr
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Verification", "CMAC with timestamp Verified successfully!")
@@ -1341,7 +1412,8 @@ class mainWindow(QWidget):
                 retList = interface.If_verify_crc(
                     self.t3_input_path_file_display.text(),
                     self.t3_crc_verification_path_display.text(),
-                    self.t3_crc_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText(),
+                    start_addr, end_addr
                 )
                 QMessageBox.information(self, f"{retList[0]}", f"{retList[1]}")
 

@@ -20,7 +20,7 @@ python -m pip install --upgrade pip
 
 REM Install necessary packages
 echo Installing necessary packages...
-pip install --upgrade PyQt5 cryptography crcmod
+pip install --upgrade PyQt5 cryptography crcmod bincopy
 
 REM Deactivate the virtual environment
 echo Deactivating virtual environment...

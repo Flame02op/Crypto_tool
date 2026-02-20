@@ -10,6 +10,7 @@ from crypto_key_app import encryption_decryption as encrypt_decrypt
 from crypto_key_app import cmac
 from crypto_key_app import crc
 from crypto_key_app import ed25519_signatures as ed25519_sign
+from crypto_key_app import file_parser
 from cryptography.hazmat.primitives import hashes
 import time
 import os
@@ -30,7 +31,22 @@ def checkFilePath(path):
         return True
     else:
         return False
-    
+
+def _load_input_data(input_file, start_addr=None, end_addr=None):
+    """Load raw data from a file, with srec/hex parsing support.
+
+    For SREC and Intel HEX files the file is parsed and the binary content
+    within the requested address range is returned.  For all other file types
+    the raw file bytes are returned (address parameters are ignored).
+
+    Returns:
+        tuple: ('Success', bytes) or ('Error'/'Warning', message_str)
+    """
+    if file_parser.is_srec_or_hex_file(input_file):
+        return file_parser.parse_file(input_file, start_addr or None, end_addr or None)
+    with open(input_file, 'rb') as fin:
+        return ('Success', fin.read())
+
 def If_generateKey(key_type, key_alg):
     # global public_key, private_key
     if key_type == "RSA":
@@ -607,13 +623,15 @@ def If_verify_hash(input_file, hash_file, hash_algo):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generate_CMAC(key_file, input_file):
+def If_generate_CMAC(key_file, input_file, start_addr=None, end_addr=None):
     for file in [key_file, input_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file , "rb") as fin:
-        message = fin.read()
+    data_result = _load_input_data(input_file, start_addr, end_addr)
+    if data_result[0] != 'Success':
+        return data_result
+    message = data_result[1]
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
 
     try:
@@ -644,13 +662,15 @@ def If_generate_CMAC(key_file, input_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_verify_cmac(key_file, input_file, cmac_file):
+def If_verify_cmac(key_file, input_file, cmac_file, start_addr=None, end_addr=None):
     for file in [key_file, input_file, cmac_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+    data_result = _load_input_data(input_file, start_addr, end_addr)
+    if data_result[0] != 'Success':
+        return data_result
+    message = data_result[1]
 
     try:
         retList = keys.load_symmetric_key(key_file)
@@ -679,12 +699,15 @@ def If_verify_cmac(key_file, input_file, cmac_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_generate_cmac_with_time_stamp( key_file, input_file, timestamp):
+def If_generate_cmac_with_time_stamp(key_file, input_file, timestamp, start_addr=None, end_addr=None):
     for file in [key_file, input_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+
+    data_result = _load_input_data(input_file, start_addr, end_addr)
+    if data_result[0] != 'Success':
+        return data_result
+    message = data_result[1]
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
 
     try:
@@ -716,13 +739,16 @@ def If_generate_cmac_with_time_stamp( key_file, input_file, timestamp):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, time_threshold):
+def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, time_threshold,
+                                   start_addr=None, end_addr=None):
     for file in [key_file, input_file, cmac_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+    data_result = _load_input_data(input_file, start_addr, end_addr)
+    if data_result[0] != 'Success':
+        return data_result
+    message = data_result[1]
 
     try:
         retList = keys.load_symmetric_key(key_file)
@@ -751,12 +777,14 @@ def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, t
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generate_crc(input_file, algorithm):
+def If_generate_crc(input_file, algorithm, start_addr=None, end_addr=None):
     if not checkFilePath(input_file):
         return("Warning", f"The file {os.path.split(input_file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        data = fin.read()
+    data_result = _load_input_data(input_file, start_addr, end_addr)
+    if data_result[0] != 'Success':
+        return data_result
+    data = data_result[1]
 
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
     retList = crc.calculate_crc(data, algorithm.lower())
@@ -775,13 +803,15 @@ def If_generate_crc(input_file, algorithm):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_verify_crc(input_file, crc_file, algorithm):
+def If_verify_crc(input_file, crc_file, algorithm, start_addr=None, end_addr=None):
     for file in [input_file, crc_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(input_file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        data = fin.read()
+    data_result = _load_input_data(input_file, start_addr, end_addr)
+    if data_result[0] != 'Success':
+        return data_result
+    data = data_result[1]
     with open(crc_file) as fin:
         calculated_crc = fin.read()
 
