@@ -1209,7 +1209,7 @@ class mainWindow(QWidget):
             QMessageBox.warning(self, "Missing Input", "Please load an input file and the generated hasher file .")
         else:
             key_type = self.t1_key_type_dropdown.currentText()
-            retList = interface.If_updateHasherLongMessage(key_type, self.t1_input_file_path_display.text(), self.t1_hasher_file_path.text())
+            retList = interface.If_updateHasherLongMessage(key_type, self.t1_input_file_path_display.text(), self.t1_hasher_file_path.text(), self.t1_start_address_input.text(), self.t1_end_address_input.text())
             if retList[0] == "Success":
                 QMessageBox.information(self, "Update Hasher", "Hasher updated with given data successfully!")
             else:
@@ -1244,7 +1244,9 @@ class mainWindow(QWidget):
                         self.t1_key_type_dropdown.currentText(),
                         self.t1_private_key_file_path_display.text(),
                         self.t1_input_file_path_display.text(),
-                        self.t1_algorithm_dropdown.currentText()
+                        self.t1_algorithm_dropdown.currentText(),
+                        self.t1_start_address_input.text(),
+                        self.t1_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "Signature Generation", "Signature generated successfully!")
@@ -1276,7 +1278,9 @@ class mainWindow(QWidget):
                     self.t1_public_key_file_path_display.text(),
                     self.t1_input_file_path_display.text(),
                     self.t1_signature_file_path_display.text(),
-                    self.t1_algorithm_dropdown.currentText()
+                    self.t1_algorithm_dropdown.currentText(),
+                    self.t1_start_address_input.text(),
+                    self.t1_end_address_input.text()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "Signature Verification", "Signature verified successfully!")
@@ -1373,7 +1377,9 @@ class mainWindow(QWidget):
         else:
             retList = interface.If_generate_hash(
                 self.t2_input_file_path_display.text(),
-                self.t2_algorithm_dropdown.currentText()
+                self.t2_algorithm_dropdown.currentText(),
+                self.t2_start_address_input.text(),
+                self.t2_end_address_input.text()
             )
             if retList[0] == "Success":
                 QMessageBox.information(self, "Generate Hash", "Hash generated successfully!")
@@ -1387,7 +1393,9 @@ class mainWindow(QWidget):
             retList = interface.If_verify_hash(
                 self.t2_input_file_path_display.text(),
                 self.t2_hash_file_path_display.text(),
-                self.t2_algorithm_dropdown.currentText()
+                self.t2_algorithm_dropdown.currentText(),
+                self.t2_start_address_input.text(),
+                self.t2_end_address_input.text()
             )
             if retList[0] == "Success":
                 QMessageBox.information(self, "Verify Hash", "Hash verified!")
@@ -1416,7 +1424,9 @@ class mainWindow(QWidget):
                 else:
                     retList = interface.If_generate_CMAC(
                         self.t3_key_file_path_display.text(),
-                        self.t3_input_path_file_display.text()
+                        self.t3_input_path_file_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC generated successfully!")
@@ -1429,7 +1439,9 @@ class mainWindow(QWidget):
                     retList = interface.If_generate_cmac_with_time_stamp(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_time_stamp_display.text()
+                        self.t3_time_stamp_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC with timestamp generated successfully!")
@@ -1441,7 +1453,9 @@ class mainWindow(QWidget):
             else:
                 retList = interface.If_generate_crc(
                     self.t3_input_path_file_display.text(),
-                    self.t3_crc_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText(),
+                    self.t3_start_address_input.text(),
+                    self.t3_end_address_input.text()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "CRC Generation", "CRC generated successfully!")
@@ -1457,7 +1471,9 @@ class mainWindow(QWidget):
                     retList = interface.If_verify_cmac(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_cmac_verification_path_display.text()
+                        self.t3_cmac_verification_path_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Verification", "CMAC Verified successfully!")
@@ -1472,7 +1488,9 @@ class mainWindow(QWidget):
                         self.t3_input_path_file_display.text(),
                         self.t3_cmac_verification_path_display.text(),
                         self.t3_user_time_stamp_display.text(),
-                        self.t3_user_time_threshold_display.text()
+                        self.t3_user_time_threshold_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Verification", "CMAC with timestamp Verified successfully!")
@@ -1485,7 +1503,9 @@ class mainWindow(QWidget):
                 retList = interface.If_verify_crc(
                     self.t3_input_path_file_display.text(),
                     self.t3_crc_verification_path_display.text(),
-                    self.t3_crc_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText(),
+                    self.t3_start_address_input.text(),
+                    self.t3_end_address_input.text()
                 )
                 QMessageBox.information(self, f"{retList[0]}", f"{retList[1]}")
 
