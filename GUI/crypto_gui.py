@@ -32,7 +32,7 @@ class mainWindow(QWidget):
     def initUI(self):
         # Main layout
         self.layout = QVBoxLayout(self)
-        self.setFixedSize(657, 650)
+        self.setFixedSize(720, 750)
         self.setWindowTitle('Crypto Tool')
 
         # Tabs
@@ -140,6 +140,15 @@ class mainWindow(QWidget):
         self.t1_input_file_path_display = QLineEdit()
         self.t1_input_file_path_display.setReadOnly(True)
 
+        # Start and End Address fields for srec/hex files
+        self.t1_start_address_label = QLabel("Start Address (hex):")
+        self.t1_start_address_input = QLineEdit()
+        self.t1_start_address_input.setPlaceholderText("Optional - e.g., 0x1000")
+
+        self.t1_end_address_label = QLabel("End Address (hex):")
+        self.t1_end_address_input = QLineEdit()
+        self.t1_end_address_input.setPlaceholderText("Optional - e.g., 0x2000")
+
         # Long Signature file section
         self.t1_hasher_file_label = QLabel("Hasher File:")
         self.t1_hasher_file_btn = QPushButton("Load Hasher File")
@@ -217,21 +226,27 @@ class mainWindow(QWidget):
         t1_layout.addWidget(self.t1_input_file_btn, 6, 1)
         t1_layout.addWidget(self.t1_input_file_path_display, 6, 2, 1, 2)
 
+        # Start and End Address fields
+        t1_layout.addWidget(self.t1_start_address_label, 7, 0)
+        t1_layout.addWidget(self.t1_start_address_input, 7, 1, 1, 3)
+        t1_layout.addWidget(self.t1_end_address_label, 8, 0)
+        t1_layout.addWidget(self.t1_end_address_input, 8, 1, 1, 3)
+
         # Long message-related buttons
-        t1_layout.addWidget(self.t1_hasher_file_label, 7, 0)
-        t1_layout.addWidget(self.t1_hasher_file_btn, 7, 1)
-        t1_layout.addWidget(self.t1_hasher_file_path, 7, 2, 1, 2)
-        t1_layout.addWidget(self.t1_generate_hasher_btn, 8, 0, 1, 2)
-        t1_layout.addWidget(self.t1_update_hasher_btn, 8, 2, 1, 2)
+        t1_layout.addWidget(self.t1_hasher_file_label, 9, 0)
+        t1_layout.addWidget(self.t1_hasher_file_btn, 9, 1)
+        t1_layout.addWidget(self.t1_hasher_file_path, 9, 2, 1, 2)
+        t1_layout.addWidget(self.t1_generate_hasher_btn, 10, 0, 1, 2)
+        t1_layout.addWidget(self.t1_update_hasher_btn, 10, 2, 1, 2)
 
         # Signature File
-        t1_layout.addWidget(self.t1_signature_file_label, 9, 0)
-        t1_layout.addWidget(self.t1_signature_file_btn, 9, 1)
-        t1_layout.addWidget(self.t1_signature_file_path_display, 9, 2, 1, 2)
+        t1_layout.addWidget(self.t1_signature_file_label, 11, 0)
+        t1_layout.addWidget(self.t1_signature_file_btn, 11, 1)
+        t1_layout.addWidget(self.t1_signature_file_path_display, 11, 2, 1, 2)
 
         # Buttons for signature generation/verification
-        t1_layout.addWidget(self.t1_generate_signature_btn, 10, 0, 1, 4)
-        t1_layout.addWidget(self.t1_verify_signature_btn, 11, 0, 1, 4)
+        t1_layout.addWidget(self.t1_generate_signature_btn, 12, 0, 1, 4)
+        t1_layout.addWidget(self.t1_verify_signature_btn, 13, 0, 1, 4)
 
         # Add layout to tab
         self.tab1.setLayout(t1_layout)
@@ -263,6 +278,15 @@ class mainWindow(QWidget):
         self.t2_input_file_btn.clicked.connect(partial(self.load_input_file, "tab2"))
         self.t2_input_file_path_display = QLineEdit()
         self.t2_input_file_path_display.setReadOnly(True)
+
+        # Start and End Address fields for srec/hex files
+        self.t2_start_address_label = QLabel("Start Address (hex):")
+        self.t2_start_address_input = QLineEdit()
+        self.t2_start_address_input.setPlaceholderText("Optional - e.g., 0x1000")
+
+        self.t2_end_address_label = QLabel("End Address (hex):")
+        self.t2_end_address_input = QLineEdit()
+        self.t2_end_address_input.setPlaceholderText("Optional - e.g., 0x2000")
 
         # Initialization vector for encryption and decryption
         self.t2_iv_file_label = QLabel("Initialization vector : ")
@@ -330,30 +354,36 @@ class mainWindow(QWidget):
         t2_layout.addWidget(self.t2_input_file_btn, 3, 1)
         t2_layout.addWidget(self.t2_input_file_path_display, 3, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_iv_file_label, 4, 0)
-        t2_layout.addWidget(self.t2_iv_file_btn, 4, 1)
-        t2_layout.addWidget(self.t2_iv_file_path_display, 4, 2, 1, 2)
+        # Start and End Address fields
+        t2_layout.addWidget(self.t2_start_address_label, 4, 0)
+        t2_layout.addWidget(self.t2_start_address_input, 4, 1, 1, 3)
+        t2_layout.addWidget(self.t2_end_address_label, 5, 0)
+        t2_layout.addWidget(self.t2_end_address_input, 5, 1, 1, 3)
 
-        t2_layout.addWidget(self.t2_key_file_label, 5, 0)
-        t2_layout.addWidget(self.t2_key_file_btn, 5, 1)
-        t2_layout.addWidget(self.t2_key_file_path_display, 5, 2, 1, 2)
-        t2_layout.addWidget(self.t2_private_key_file_btn, 5, 1)
-        t2_layout.addWidget(self.t2_private_key_file_path_display, 5, 2, 1, 2)
-        t2_layout.addWidget(self.t2_public_key_file_btn, 5, 1)
-        t2_layout.addWidget(self.t2_public_key_file_path_display, 5, 2, 1, 2)
+        t2_layout.addWidget(self.t2_iv_file_label, 6, 0)
+        t2_layout.addWidget(self.t2_iv_file_btn, 6, 1)
+        t2_layout.addWidget(self.t2_iv_file_path_display, 6, 2, 1, 2)
+
+        t2_layout.addWidget(self.t2_key_file_label, 7, 0)
+        t2_layout.addWidget(self.t2_key_file_btn, 7, 1)
+        t2_layout.addWidget(self.t2_key_file_path_display, 7, 2, 1, 2)
+        t2_layout.addWidget(self.t2_private_key_file_btn, 7, 1)
+        t2_layout.addWidget(self.t2_private_key_file_path_display, 7, 2, 1, 2)
+        t2_layout.addWidget(self.t2_public_key_file_btn, 7, 1)
+        t2_layout.addWidget(self.t2_public_key_file_path_display, 7, 2, 1, 2)
         
-        t2_layout.addWidget(self.t2_encrypted_file_label, 6, 0)
-        t2_layout.addWidget(self.t2_encrypted_file_btn, 6, 1)
-        t2_layout.addWidget(self.t2_encrypted_file_path_display, 6, 2, 1, 2)
+        t2_layout.addWidget(self.t2_encrypted_file_label, 8, 0)
+        t2_layout.addWidget(self.t2_encrypted_file_btn, 8, 1)
+        t2_layout.addWidget(self.t2_encrypted_file_path_display, 8, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_hash_file_label, 6, 0)
-        t2_layout.addWidget(self.t2_hash_file_btn, 6, 1)
-        t2_layout.addWidget(self.t2_hash_file_path_display, 6, 2, 1, 2)
+        t2_layout.addWidget(self.t2_hash_file_label, 8, 0)
+        t2_layout.addWidget(self.t2_hash_file_btn, 8, 1)
+        t2_layout.addWidget(self.t2_hash_file_path_display, 8, 2, 1, 2)
 
-        t2_layout.addWidget(self.t2_encrypt_btn, 7, 0, 1, 4)
-        t2_layout.addWidget(self.t2_decrypt_btn, 7, 0, 1, 4)
-        t2_layout.addWidget(self.t2_generate_hash_btn, 8, 0, 1, 4)
-        t2_layout.addWidget(self.t2_verify_hash_btn, 8, 0, 1, 4)
+        t2_layout.addWidget(self.t2_encrypt_btn, 9, 0, 1, 4)
+        t2_layout.addWidget(self.t2_decrypt_btn, 9, 0, 1, 4)
+        t2_layout.addWidget(self.t2_generate_hash_btn, 10, 0, 1, 4)
+        t2_layout.addWidget(self.t2_verify_hash_btn, 10, 0, 1, 4)
 
         self.tab2.setLayout(t2_layout)
         # Apply Styles
@@ -400,6 +430,15 @@ class mainWindow(QWidget):
         self.t3_input_file_btn.clicked.connect(partial(self.load_input_file, "tab3"))
         self.t3_input_path_file_display = QLineEdit()
         self.t3_input_path_file_display.setReadOnly(True)
+
+        # Start and End Address fields for srec/hex files
+        self.t3_start_address_label = QLabel("Start Address (hex):")
+        self.t3_start_address_input = QLineEdit()
+        self.t3_start_address_input.setPlaceholderText("Optional - e.g., 0x1000")
+
+        self.t3_end_address_label = QLabel("End Address (hex):")
+        self.t3_end_address_input = QLineEdit()
+        self.t3_end_address_input.setPlaceholderText("Optional - e.g., 0x2000")
 
         # Key File Section
         self.t3_key_file_label = QLabel("Key File:")
@@ -477,18 +516,24 @@ class mainWindow(QWidget):
         t3_layout.addWidget(self.t3_input_file_btn, 5, 1)
         t3_layout.addWidget(self.t3_input_path_file_display, 5, 2, 1, 2)
 
-        t3_layout.addWidget(self.t3_cmac_verification_file_label, 6, 0)
-        t3_layout.addWidget(self.t3_cmac_verification_file_btn, 6, 1)
-        t3_layout.addWidget(self.t3_cmac_verification_path_display, 6, 2, 1, 2)
+        # Start and End Address fields
+        t3_layout.addWidget(self.t3_start_address_label, 6, 0)
+        t3_layout.addWidget(self.t3_start_address_input, 6, 1, 1, 3)
+        t3_layout.addWidget(self.t3_end_address_label, 7, 0)
+        t3_layout.addWidget(self.t3_end_address_input, 7, 1, 1, 3)
 
-        t3_layout.addWidget(self.t3_crc_verification_file_label, 6, 0)
-        t3_layout.addWidget(self.t3_crc_verification_file_btn, 6, 1)
-        t3_layout.addWidget(self.t3_crc_verification_path_display, 6, 2, 1, 2)
+        t3_layout.addWidget(self.t3_cmac_verification_file_label, 8, 0)
+        t3_layout.addWidget(self.t3_cmac_verification_file_btn, 8, 1)
+        t3_layout.addWidget(self.t3_cmac_verification_path_display, 8, 2, 1, 2)
 
-        t3_layout.addWidget(self.t3_generate_btn, 7, 0, 1, 4)
-        t3_layout.addWidget(self.t3_verify_btn, 7, 0, 1, 4)
+        t3_layout.addWidget(self.t3_crc_verification_file_label, 8, 0)
+        t3_layout.addWidget(self.t3_crc_verification_file_btn, 8, 1)
+        t3_layout.addWidget(self.t3_crc_verification_path_display, 8, 2, 1, 2)
 
-        t3_layout.addWidget(self.t3_random_number_btn, 8, 0, 1, 4)
+        t3_layout.addWidget(self.t3_generate_btn, 9, 0, 1, 4)
+        t3_layout.addWidget(self.t3_verify_btn, 9, 0, 1, 4)
+
+        t3_layout.addWidget(self.t3_random_number_btn, 10, 0, 1, 4)
 
 
         self.tab3.setLayout(t3_layout)
@@ -784,6 +829,13 @@ class mainWindow(QWidget):
         self.t1_input_file_btn.setVisible(not key_generation_mode and not verify_long_sign_mode and not key_conversion_mode)
         self.t1_input_file_path_display.setVisible(not key_generation_mode and not verify_long_sign_mode and not key_conversion_mode)
 
+        # Start and End Address fields (visible when input file is visible)
+        input_file_visible = not key_generation_mode and not verify_long_sign_mode and not key_conversion_mode
+        self.t1_start_address_label.setVisible(input_file_visible)
+        self.t1_start_address_input.setVisible(input_file_visible)
+        self.t1_end_address_label.setVisible(input_file_visible)
+        self.t1_end_address_input.setVisible(input_file_visible)
+
         # Hasher file and buttons (only for long message modes)
         self.t1_hasher_file_label.setVisible(verify_long_sign_mode or generate_long_sign_mode)
         self.t1_hasher_file_btn.setVisible(verify_long_sign_mode or generate_long_sign_mode)
@@ -817,6 +869,14 @@ class mainWindow(QWidget):
         self.t2_input_file_label.setVisible(not is_decryption_mode)
         self.t2_input_file_btn.setVisible(not is_decryption_mode)
         self.t2_input_file_path_display.setVisible(not is_decryption_mode)
+
+        # Start and End Address fields (visible when input file is visible)
+        input_file_visible = not is_decryption_mode
+        self.t2_start_address_label.setVisible(input_file_visible)
+        self.t2_start_address_input.setVisible(input_file_visible)
+        self.t2_end_address_label.setVisible(input_file_visible)
+        self.t2_end_address_input.setVisible(input_file_visible)
+
         self.t2_decrypt_btn.setVisible(is_decryption_mode)
         self.t2_encrypted_file_label.setVisible(is_decryption_mode)
         self.t2_encrypted_file_btn.setVisible(is_decryption_mode)
@@ -872,6 +932,13 @@ class mainWindow(QWidget):
         self.t3_input_file_btn.setVisible(not is_random_mode)
         self.t3_input_path_file_display.setVisible(not is_random_mode)
 
+        # Start and End Address fields (visible when input file is visible)
+        input_file_visible = not is_random_mode
+        self.t3_start_address_label.setVisible(input_file_visible)
+        self.t3_start_address_input.setVisible(input_file_visible)
+        self.t3_end_address_label.setVisible(input_file_visible)
+        self.t3_end_address_input.setVisible(input_file_visible)
+
         self.t3_cmac_verification_file_label.setVisible(is_verification_mode and is_cmac_mode)
         self.t3_cmac_verification_file_btn.setVisible(is_verification_mode and is_cmac_mode)
         self.t3_cmac_verification_path_display.setVisible(is_verification_mode and is_cmac_mode)
@@ -888,65 +955,121 @@ class mainWindow(QWidget):
         """Apply styles for a more polished UI."""
         self.setStyleSheet("""
             QWidget {
-                background: qlineargradient(
-                    x1: 0, y1: 0, x2: 1, y2: 1,
-                    stop: 0 #ffffff, stop: 1 #d7e8f7
-                );
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 10pt;
             }
             QTabWidget::pane {
-                border-top: 2px solid #444;
-                padding: 5px;
-                background: #F5F5F5;
+                border: 1px solid #c0c0c0;
+                border-radius: 6px;
+                padding: 10px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+                background-color: #f8f9fa;
             }
             QTabWidget::tab-bar {
                 alignment: center;
             }
             QTabBar::tab {
-                background: #D3D3D3;
-                border: 1px solid #444;
-                padding: 8px 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                            stop:0 #e8e8e8, stop:1 #d0d0d0);
+                border: 1px solid #b0b0b0;
+                padding: 10px 20px;
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
+                margin-right: 2px;
                 color: #333;
                 font-weight: bold;
             }
             QTabBar::tab:selected {
-                background: #00509E;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                            stop:0 #0078D7, stop:1 #00509E);
                 color: white;
                 font-weight: bold;
+                border-color: #00509E;
+            }
+            QTabBar::tab:hover:!selected {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                            stop:0 #f0f0f0, stop:1 #e0e0e0);
             }
             QLabel {
                 font-weight: bold;
+                color: #333;
+                padding: 2px;
             }
             QLineEdit {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                background-color: #fff;
+                padding: 8px;
+                border: 1px solid #c0c0c0;
+                border-radius: 5px;
+                background-color: #ffffff;
+                selection-background-color: #0078D7;
+            }
+            QLineEdit:focus {
+                border: 2px solid #0078D7;
+            }
+            QLineEdit:read-only {
+                background-color: #f5f5f5;
+                color: #555;
             }
             QPushButton {
-                padding: 8px;
-                border-radius: 8px;  /* Rounded corners */
-                background-color: #0078D7;
+                padding: 10px 16px;
+                border-radius: 5px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                            stop:0 #0078D7, stop:1 #0062B1);
                 color: white;
                 font-weight: bold;
+                border: none;
             }
             QPushButton:hover {
-                background-color: #00509E;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                            stop:0 #0062B1, stop:1 #00509E);
+            }
+            QPushButton:pressed {
+                background: #00509E;
             }
             QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                background-color: #fff;
+                padding: 8px;
+                border: 1px solid #c0c0c0;
+                border-radius: 5px;
+                background-color: #ffffff;
+                min-height: 20px;
+            }
+            QComboBox:focus {
+                border: 2px solid #0078D7;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                width: 12px;
+                height: 12px;
             }
             QRadioButton {
                 font-weight: normal;
+                padding: 5px;
+                spacing: 8px;
             }
-            QWidget#tab1 {
-                background-color: #f0f0f0;
-                padding: 15px;
+            QRadioButton::indicator {
+                width: 16px;
+                height: 16px;
+            }
+            QRadioButton::indicator:checked {
+                background-color: #0078D7;
+                border: 2px solid #0078D7;
+                border-radius: 8px;
+            }
+            QRadioButton::indicator:unchecked {
+                background-color: white;
+                border: 2px solid #c0c0c0;
+                border-radius: 8px;
+            }
+            QTextEdit {
+                border: 1px solid #c0c0c0;
                 border-radius: 5px;
+                background-color: #ffffff;
+                padding: 10px;
+            }
+            QMessageBox {
+                background-color: #f8f9fa;
             }
         """)
 
@@ -1086,7 +1209,7 @@ class mainWindow(QWidget):
             QMessageBox.warning(self, "Missing Input", "Please load an input file and the generated hasher file .")
         else:
             key_type = self.t1_key_type_dropdown.currentText()
-            retList = interface.If_updateHasherLongMessage(key_type, self.t1_input_file_path_display.text(), self.t1_hasher_file_path.text())
+            retList = interface.If_updateHasherLongMessage(key_type, self.t1_input_file_path_display.text(), self.t1_hasher_file_path.text(), self.t1_start_address_input.text(), self.t1_end_address_input.text())
             if retList[0] == "Success":
                 QMessageBox.information(self, "Update Hasher", "Hasher updated with given data successfully!")
             else:
@@ -1121,7 +1244,9 @@ class mainWindow(QWidget):
                         self.t1_key_type_dropdown.currentText(),
                         self.t1_private_key_file_path_display.text(),
                         self.t1_input_file_path_display.text(),
-                        self.t1_algorithm_dropdown.currentText()
+                        self.t1_algorithm_dropdown.currentText(),
+                        self.t1_start_address_input.text(),
+                        self.t1_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "Signature Generation", "Signature generated successfully!")
@@ -1153,7 +1278,9 @@ class mainWindow(QWidget):
                     self.t1_public_key_file_path_display.text(),
                     self.t1_input_file_path_display.text(),
                     self.t1_signature_file_path_display.text(),
-                    self.t1_algorithm_dropdown.currentText()
+                    self.t1_algorithm_dropdown.currentText(),
+                    self.t1_start_address_input.text(),
+                    self.t1_end_address_input.text()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "Signature Verification", "Signature verified successfully!")
@@ -1250,7 +1377,9 @@ class mainWindow(QWidget):
         else:
             retList = interface.If_generate_hash(
                 self.t2_input_file_path_display.text(),
-                self.t2_algorithm_dropdown.currentText()
+                self.t2_algorithm_dropdown.currentText(),
+                self.t2_start_address_input.text(),
+                self.t2_end_address_input.text()
             )
             if retList[0] == "Success":
                 QMessageBox.information(self, "Generate Hash", "Hash generated successfully!")
@@ -1264,7 +1393,9 @@ class mainWindow(QWidget):
             retList = interface.If_verify_hash(
                 self.t2_input_file_path_display.text(),
                 self.t2_hash_file_path_display.text(),
-                self.t2_algorithm_dropdown.currentText()
+                self.t2_algorithm_dropdown.currentText(),
+                self.t2_start_address_input.text(),
+                self.t2_end_address_input.text()
             )
             if retList[0] == "Success":
                 QMessageBox.information(self, "Verify Hash", "Hash verified!")
@@ -1293,7 +1424,9 @@ class mainWindow(QWidget):
                 else:
                     retList = interface.If_generate_CMAC(
                         self.t3_key_file_path_display.text(),
-                        self.t3_input_path_file_display.text()
+                        self.t3_input_path_file_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC generated successfully!")
@@ -1306,7 +1439,9 @@ class mainWindow(QWidget):
                     retList = interface.If_generate_cmac_with_time_stamp(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_time_stamp_display.text()
+                        self.t3_time_stamp_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Generation", "CMAC with timestamp generated successfully!")
@@ -1318,7 +1453,9 @@ class mainWindow(QWidget):
             else:
                 retList = interface.If_generate_crc(
                     self.t3_input_path_file_display.text(),
-                    self.t3_crc_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText(),
+                    self.t3_start_address_input.text(),
+                    self.t3_end_address_input.text()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "CRC Generation", "CRC generated successfully!")
@@ -1334,7 +1471,9 @@ class mainWindow(QWidget):
                     retList = interface.If_verify_cmac(
                         self.t3_key_file_path_display.text(),
                         self.t3_input_path_file_display.text(),
-                        self.t3_cmac_verification_path_display.text()
+                        self.t3_cmac_verification_path_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Verification", "CMAC Verified successfully!")
@@ -1349,7 +1488,9 @@ class mainWindow(QWidget):
                         self.t3_input_path_file_display.text(),
                         self.t3_cmac_verification_path_display.text(),
                         self.t3_user_time_stamp_display.text(),
-                        self.t3_user_time_threshold_display.text()
+                        self.t3_user_time_threshold_display.text(),
+                        self.t3_start_address_input.text(),
+                        self.t3_end_address_input.text()
                     )
                     if retList[0] == "Success":
                         QMessageBox.information(self, "CMAC Verification", "CMAC with timestamp Verified successfully!")
@@ -1362,7 +1503,9 @@ class mainWindow(QWidget):
                 retList = interface.If_verify_crc(
                     self.t3_input_path_file_display.text(),
                     self.t3_crc_verification_path_display.text(),
-                    self.t3_crc_algorithm_dropdown.currentText()
+                    self.t3_crc_algorithm_dropdown.currentText(),
+                    self.t3_start_address_input.text(),
+                    self.t3_end_address_input.text()
                 )
                 QMessageBox.information(self, f"{retList[0]}", f"{retList[1]}")
 

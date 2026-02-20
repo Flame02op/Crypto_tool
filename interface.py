@@ -380,8 +380,9 @@ def If_verify_signature(key_type, public_Key_file, input_file, signature_file, h
     elif message is None:
         return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
-    with open(signature_file, "rb") as fin:
-        signature = fin.read()
+    with open(signature_file, "r") as fin:
+        signature_b64 = fin.read()
+    signature = base64.b64decode(signature_b64)
 
     retList = []
     if key_type == "RSA":
@@ -429,8 +430,9 @@ def If_verify_signature_LongMessage(key_type, public_Key_file, hasher_file, sign
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-    with open(signature_file, 'rb') as fin:
-        signature = fin.read()
+    with open(signature_file, 'r') as fin:
+        signature_b64 = fin.read()
+    signature = base64.b64decode(signature_b64)
 
     retList = []
     if key_type == "RSA":
