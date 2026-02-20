@@ -11,15 +11,42 @@ from crypto_key_app import cmac
 from crypto_key_app import crc
 from crypto_key_app import ed25519_signatures as ed25519_sign
 from cryptography.hazmat.primitives import hashes
+from crypto_key_app import srec_parser as sparser
+from crypto_key_app import hex_parser as hparser
 import time
 import os
 import pickle
+import base64
 
 longMessage_callOut  = 0
 
 def createTempDir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+def get_input_file_data(input_file, start_add, end_add):
+    file_type = ""
+    with open(input_file, 'r') as fin:
+        for line in fin:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('S') and len(line) > 2 and line[1].isdigit():
+                file_type = "srec"
+                break
+            elif line.startswith(':') and input_file.endswith(".hex"):
+                file_type = 'hex'
+                break
+            else:
+                # If the line doesn't match either, keep checking
+                continue
+
+    if file_type == "srec":
+        return sparser.parse_data(input_file, start_add, end_add)
+    elif file_type == "hex":
+        return hparser.parse_data(input_file, start_add, end_add)
+    else:
+        return "unknown"
 
 createTempDir("./Temp")
 with open("./Temp/log_file.txt", "w") as log:
@@ -166,7 +193,7 @@ def If_hex_to_pem(key_type, key_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generate_sign(key_type, private_key_file, input_file, hash_algo):
+def If_generate_sign(key_type, private_key_file, input_file, hash_algo, start_add, end_add):
     for file in [private_key_file, input_file]:
         if not checkFilePath(file):
             return ("Warning", f"The file path {os.path.split(file)[1]} does not exist")
@@ -185,8 +212,12 @@ def If_generate_sign(key_type, private_key_file, input_file, hash_algo):
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
     retList = []
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
+    
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
     createTempDir("./Temp/Sign")
     if key_type == "RSA":
@@ -197,8 +228,8 @@ def If_generate_sign(key_type, private_key_file, input_file, hash_algo):
         retList = ed25519_sign.generate_ed25519_signature(key, message)
 
     if retList[0] == "Success":
-        signature = retList[1]
-        with open(f"./Temp/Sign/{input_file_name}.Signed", "wb") as sign_file:
+        signature = base64.b64encode(retList[1]).decode('utf-8')
+        with open(f"./Temp/Sign/{input_file_name}.Signed", "w") as sign_file:
             sign_file.write(signature)
         return ("Success", "Signature generated")
     elif status == "Failure":
@@ -233,14 +264,18 @@ def If_generateHasherLongMessage(key_type, hash_algo):
     else:
         return("Warning", "Invalid Hash algorithm")
 
-def If_updateHasherLongMessage(key_type, input_file, hasher_file):
+def If_updateHasherLongMessage(key_type, input_file, hasher_file, start_add, end_add):
     if longMessage_callOut > 0:
 
         for file in [input_file, hasher_file]:
             if not checkFilePath(file):
                 return ("Warning", f"The file path {os.path.split(file)[1]} does not exist")
-        with open(input_file, "rb") as fin:
-            message = fin.read()
+
+        message = get_input_file_data(input_file, start_add, end_add)
+        if message == "unknown":
+            return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+        elif message is None:
+            return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
         with open(hasher_file, "rb") as fin:
             selected_hash, state = pickle.load(fin)
@@ -307,9 +342,9 @@ def If_generate_signForLongMessage(key_type, private_key_file, hasher_file, hash
         else:
             return ("Warning", f"{key_type} does not support long message signing")
         if retList[0] == "Success":
-            signature = retList[1]
+            signature = base64.b64encode(retList[1]).decode('utf-8')
             createTempDir("./Temp/Sign")
-            with open(f"./Temp/Sign/{hasher_file_name}.sign", "wb") as fout:
+            with open(f"./Temp/Sign/{hasher_file_name}.sign", "w") as fout:
                 fout.write(signature)
             return ("Success", "Signature generated")
         else:
@@ -321,7 +356,7 @@ def If_generate_signForLongMessage(key_type, private_key_file, hasher_file, hash
     else:
         return ("Warning", "Generate Hasher for long message first")
 
-def If_verify_signature(key_type, public_Key_file, input_file, signature_file, hash_algo):
+def If_verify_signature(key_type, public_Key_file, input_file, signature_file, hash_algo, start_add, end_add):
 
     for file in [input_file, public_Key_file, signature_file]:
         if not checkFilePath(file):
@@ -339,10 +374,15 @@ def If_verify_signature(key_type, public_Key_file, input_file, signature_file, h
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-    with open(input_file, "rb") as fin:
-        message = fin.read()
-    with open(signature_file, "rb") as fin:
-        signature = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
+
+    with open(signature_file, "r") as fin:
+        signature_b64 = fin.read()
+    signature = base64.b64decode(signature_b64)
 
     retList = []
     if key_type == "RSA":
@@ -390,8 +430,9 @@ def If_verify_signature_LongMessage(key_type, public_Key_file, hasher_file, sign
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-    with open(signature_file, 'rb') as fin:
-        signature = fin.read()
+    with open(signature_file, 'r') as fin:
+        signature_b64 = fin.read()
+    signature = base64.b64decode(signature_b64)
 
     retList = []
     if key_type == "RSA":
@@ -410,7 +451,7 @@ def If_verify_signature_LongMessage(key_type, public_Key_file, hasher_file, sign
     else:
         return retList
 
-def If_aes_encrypt(key_file, input_file, iv_file, aes_algo):
+def If_aes_encrypt(key_file, input_file, iv_file, aes_algo, start_add, end_add):
     for file in [key_file, input_file, iv_file]:
         if not checkFilePath(file):
             return("Warning", f"The file path {os.path.split(file)[1]} does not exist")
@@ -428,14 +469,17 @@ def If_aes_encrypt(key_file, input_file, iv_file, aes_algo):
             log.write(f"Error occurred : {str(e)}")
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
-
-    with open(input_file, "r") as fin:
-        plain_text = fin.read()
+    
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
     with open(iv_file, "rb") as fin:
         iv = fin.read()
     retList = []
-    retList = encrypt_decrypt.aes_encrypt(key, iv, plain_text, aes_algo)
+    retList = encrypt_decrypt.aes_encrypt(key, iv, message, aes_algo)
     if retList[0] == "Success":
         encrypted_data = retList[1]
         createTempDir("./Temp/Encrypt")
@@ -451,7 +495,7 @@ def If_aes_encrypt(key_file, input_file, iv_file, aes_algo):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_rsa_encrypt(public_key_file, input_file, hash_algo):
+def If_rsa_encrypt(public_key_file, input_file, hash_algo, start_add, end_add):
     for file in [public_key_file, input_file]:
         if not checkFilePath(file):
             return("Warning", f"The file path {os.path.split(file)[1]} does not exist")
@@ -467,9 +511,12 @@ def If_rsa_encrypt(public_key_file, input_file, hash_algo):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-    with open(input_file, "rb") as fin:
-        plain_text = fin.read()
-    retList = encrypt_decrypt.rsa_encrypt(public_key, plain_text, hash_algo)
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
+    retList = encrypt_decrypt.rsa_encrypt(public_key, message, hash_algo)
     if retList[0] == "Success":
         encrypted_data = retList[1]
         createTempDir("./Temp/Encrypt")
@@ -562,14 +609,17 @@ def If_rsa_decrypt(private_key_file, encrypted_file, hash_algo):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generate_hash(input_file, hash_algo):
+def If_generate_hash(input_file, hash_algo, start_add, end_add):
     if not checkFilePath(input_file):
         return("Warning", f"The file {os.path.split(input_file)[1]} does not exist")
     
-    with open(input_file , "rb") as fin:
-        data = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
-    retList = hashlib_hash.calculate_hash(data, hash_algo)
+    retList = hashlib_hash.calculate_hash(message, hash_algo)
     if retList[0] == "Success":
         gen_hash = retList[1]
         createTempDir("./Temp/Hashes")
@@ -586,13 +636,16 @@ def If_generate_hash(input_file, hash_algo):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_verify_hash(input_file, hash_file, hash_algo):
+def If_verify_hash(input_file, hash_file, hash_algo, start_add, end_add):
     for file in [input_file, hash_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file , "rb") as fin:
-        data = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
     with open(hash_file , "r") as fin:
         expected_hash = fin.read()
@@ -607,13 +660,17 @@ def If_verify_hash(input_file, hash_file, hash_algo):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generate_CMAC(key_file, input_file):
+def If_generate_CMAC(key_file, input_file, start_add, end_add):
     for file in [key_file, input_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file , "rb") as fin:
-        message = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
+
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
 
     try:
@@ -644,13 +701,16 @@ def If_generate_CMAC(key_file, input_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_verify_cmac(key_file, input_file, cmac_file):
+def If_verify_cmac(key_file, input_file, cmac_file, start_add, end_add):
     for file in [key_file, input_file, cmac_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
     try:
         retList = keys.load_symmetric_key(key_file)
@@ -679,12 +739,17 @@ def If_verify_cmac(key_file, input_file, cmac_file):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_generate_cmac_with_time_stamp( key_file, input_file, timestamp):
+def If_generate_cmac_with_time_stamp(key_file, input_file, timestamp, start_add, end_add):
     for file in [key_file, input_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
+
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
 
     try:
@@ -716,13 +781,16 @@ def If_generate_cmac_with_time_stamp( key_file, input_file, timestamp):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, time_threshold):
+def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, time_threshold, start_add, end_add):
     for file in [key_file, input_file, cmac_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        message = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
     try:
         retList = keys.load_symmetric_key(key_file)
@@ -751,15 +819,18 @@ def If_verify_cmac_with_time_stamp(key_file, input_file, cmac_file, timestamp, t
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
 
-def If_generate_crc(input_file, algorithm):
+def If_generate_crc(input_file, algorithm, start_add, end_add):
     if not checkFilePath(input_file):
         return("Warning", f"The file {os.path.split(input_file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        data = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
 
     input_file_name = os.path.splitext(os.path.split(input_file)[1])[0]
-    retList = crc.calculate_crc(data, algorithm.lower())
+    retList = crc.calculate_crc(message, algorithm.lower())
     if retList[0] == "Success":
         gen_crc = str(retList[1])
         createTempDir("./Temp/CRC")
@@ -775,17 +846,21 @@ def If_generate_crc(input_file, algorithm):
             log.write("\n*********************************************\n")
         return("Error", "An error occurred : Please refer the log file for more details : Temp/log_file.txt")
     
-def If_verify_crc(input_file, crc_file, algorithm):
+def If_verify_crc(input_file, crc_file, algorithm, start_add, end_add):
     for file in [input_file, crc_file]:
         if not checkFilePath(file):
             return("Warning", f"The file {os.path.split(input_file)[1]} does not exist")
 
-    with open(input_file, "rb") as fin:
-        data = fin.read()
+    message = get_input_file_data(input_file, start_add, end_add)
+    if message == "unknown":
+        return ("Warning", "The input file is not in SREC or Intel HEX format, please provide a valid file")
+    elif message is None:
+        return ("Error", "An error occurred while reading the input file, please check the file format and content")
+
     with open(crc_file) as fin:
         calculated_crc = fin.read()
 
-    retList = crc.verify_crc(data, algorithm.lower(), int(calculated_crc))
+    retList = crc.verify_crc(message, algorithm.lower(), int(calculated_crc))
     if retList[0] == "Success" or retList[0] == "Failure":
         return retList
     else:
@@ -803,3 +878,8 @@ def If_generate_random_bytes(num_bytes):
 
 if __name__ == "__main__":
     print("Execution started")
+    # file_list = ["Zeekr_IHU_CX1E_BM.srec", "Zeekr_IHU_CX1E_BM.hex", "output.txt", "./output.log", "./output.bin", "KDS_C0_CM2E_Filled_AB.hex"]
+    # for file in file_list:
+    #     retval = get_input_file_type(f"./Crypto_tool/{file}")
+    #     print(file, retval)
+        
