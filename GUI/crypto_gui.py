@@ -1254,7 +1254,7 @@ class mainWindow(QWidget):
                         QMessageBox.information(self, "Signature Generation", retList[1])
 
     def t1_verify_signature(self):
-        if "long" in self.t1_algorithm_dropdown.currentText():
+        if "long" in self.t1_mode_dropdown.currentText().lower():
             if not self.t1_public_key_file_path_display.text() or not self.t1_hasher_file_path.text() or not self.t1_signature_file_path_display.text():
                 QMessageBox.warning(self, "Missing Input", "Please load the public key, a hasher file, and a signature file for generating a signature.")
             else:
@@ -1310,7 +1310,9 @@ class mainWindow(QWidget):
                 retList = interface.If_rsa_encrypt(
                     self.t2_public_key_file_path_display.text(),
                     self.t2_input_file_path_display.text(),
-                    self.t2_algorithm_dropdown.currentText()
+                    self.t2_algorithm_dropdown.currentText(),
+                    self.t2_start_address_input.text(),
+                    self.t2_end_address_input.text()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "Encryption", "File encrypted successfully!")
@@ -1329,7 +1331,9 @@ class mainWindow(QWidget):
                     self.t2_key_file_path_display.text(),
                     self.t2_input_file_path_display.text(),
                     self.t2_iv_file_path_display.text(),
-                    aes_algo
+                    aes_algo,
+                    self.t2_start_address_input.text(),
+                    self.t2_end_address_input.text()
                 )
                 if retList[0] == "Success":
                     QMessageBox.information(self, "Encryption", "File encrypted successfully!")
@@ -1367,7 +1371,7 @@ class mainWindow(QWidget):
                     aes_algo
                 )
                 if retList[0] == "Success":
-                    QMessageBox.information(self, "Decryption", "File encrypted successfully!")
+                    QMessageBox.information(self, "Decryption", "File decrypted successfully!")
                 else:
                     QMessageBox.information(self, "Decryption", retList[1])
     
